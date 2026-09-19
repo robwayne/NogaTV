@@ -75,7 +75,6 @@ type Persisted = {
   statusOverrides: Record<string, Status>;
   removedIds: string[];
   plans: Plan[];
-  profiles: Profile[];
   activeProfileId: string | null;
   entries: LogEntry[];
   /** showId -> service id from lib/services.ts */
@@ -100,7 +99,6 @@ const EMPTY: Persisted = {
   statusOverrides: {},
   removedIds: [],
   plans: [],
-  profiles: DEFAULT_PROFILES,
   activeProfileId: null,
   entries: [],
   services: {},
@@ -207,7 +205,6 @@ type Ctx = {
   entries: LogEntry[];
   byId: (id: string) => LibraryShow | undefined;
   setActiveProfile: (id: string | null) => void;
-  renameProfile: (id: string, name: string) => void;
   addEntry: (entry: Omit<LogEntry, "id" | "profileId" | "createdAt">) => void;
   removeEntry: (id: string) => void;
   entriesForShow: (showId: string) => LogEntry[];
@@ -293,19 +290,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       watched: shows.filter((s) => s.status === "watched"),
       watchlist: shows.filter((s) => s.status === "watchlist"),
       plans: [...state.plans].sort((a, b) => a.date.localeCompare(b.date)),
-      profiles: state.profiles.length ? state.profiles : DEFAULT_PROFILES,
-      activeProfile:
-        state.profiles.find((p) => p.id === state.activeProfileId) ?? null,
+      profiles: DEFAULT_PROFILES,
+      activeProfile: DEFAULT_PROFILES.find((p) => p.id === state.activeProfileId) ?? null,
       entries: [...state.entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
       byId,
       setActiveProfile: (id) => update((prev) => ({ ...prev, activeProfileId: id })),
-      renameProfile: (id, name) =>
-        update((prev) => ({
-          ...prev,
-          profiles: prev.profiles.map((p) =>
-            p.id === id ? { ...p, name: name.trim() || p.name } : p,
-          ),
-        })),
       addEntry: (entry) =>
         update((prev) => {
           if (!prev.activeProfileId) return prev;

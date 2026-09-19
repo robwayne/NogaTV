@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useStore } from "@/lib/store";
 
 /** "Who's watching?" — picks whose name goes on the log entries. */
 export function ProfileBar() {
-  const { ready, profiles, activeProfile, setActiveProfile, renameProfile } = useStore();
-  const [editing, setEditing] = useState(false);
+  const { ready, profiles, activeProfile, setActiveProfile } = useStore();
 
   if (!ready) return <div className="h-[46px]" />;
 
@@ -33,29 +31,7 @@ export function ProfileBar() {
             </button>
           );
         })}
-
-        <button
-          type="button"
-          onClick={() => setEditing((v) => !v)}
-          className="ml-auto text-vhs-dim underline-offset-4 hover:text-vhs-amber hover:underline"
-        >
-          {editing ? "done" : "rename"}
-        </button>
       </div>
-
-      {editing ? (
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap gap-2 px-4 pb-3">
-          {profiles.map((p) => (
-            <input
-              key={p.id}
-              className="field max-w-[180px]"
-              defaultValue={p.name}
-              aria-label={`Name for profile ${p.name}`}
-              onBlur={(e) => renameProfile(p.id, e.target.value)}
-            />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
