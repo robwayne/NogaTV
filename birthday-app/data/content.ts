@@ -29,7 +29,7 @@ export type Show = {
 export const SITE = {
   herName: "Noga",
   herFullName: "Noga Frischoff",
-  fromName: "Me", // TODO: your name
+  fromName: "Rob",
   turning: 28,
   friendsSince: 2020,
   where: "Tel Aviv",
