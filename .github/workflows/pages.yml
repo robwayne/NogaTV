@@ -1,0 +1,63 @@
+name: Deploy the birthday site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/birthday-gift-web-app-fedsgs
+    paths:
+      - "birthday-app/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it mid-flight.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: birthday-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: birthday-app/package-lock.json
+
+      - run: npm ci
+
+      - name: Build the static export
+        env:
+          STATIC_EXPORT: "1"
+          GITHUB_PAGES: "1"
+        run: npx next build
+
+      # Without this, Pages runs the output through Jekyll, which drops the
+      # _next directory and takes the whole site's CSS and JS with it.
+      - run: touch out/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: birthday-app/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -6,6 +6,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: `${SITE.title} — for ${SITE.herName}`,
   description: SITE.subtitle,
+  // It's a gift, not a blog post. Keep it out of search results.
+  robots: { index: false, follow: false },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

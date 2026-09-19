@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SITE } from "@/data/content";
 
 const NAV = [
@@ -32,15 +33,27 @@ export function Hero() {
       <p className="mt-6 max-w-2xl text-sm leading-relaxed text-vhs-dim">{SITE.dedication}</p>
 
       <nav className="mt-9 flex flex-wrap gap-x-5 gap-y-2 text-[0.7rem] uppercase tracking-[0.2em]">
-        {NAV.map((item) => (
-          <a
-            key={item.href}
-            href={item.href}
-            className="text-vhs-dim transition-colors hover:text-vhs-amber"
-          >
-            {item.label}
-          </a>
-        ))}
+        {NAV.map((item) =>
+          // Routed pages go through Link so they pick up the base path the
+          // site is deployed under; in-page anchors stay plain.
+          item.href.startsWith("/") ? (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-vhs-dim transition-colors hover:text-vhs-amber"
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <a
+              key={item.href}
+              href={item.href}
+              className="text-vhs-dim transition-colors hover:text-vhs-amber"
+            >
+              {item.label}
+            </a>
+          ),
+        )}
       </nav>
     </header>
   );
