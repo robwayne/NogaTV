@@ -9,11 +9,12 @@ export function AddShowForm({ defaultStatus }: { defaultStatus: Status }) {
   const [title, setTitle] = useState("");
   const [years, setYears] = useState("");
   const [note, setNote] = useState("");
+  const [kind, setKind] = useState<"show" | "movie">("show");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    addShow({ title, years, note, status: defaultStatus });
+    addShow({ title, years, note, status: defaultStatus, kind });
     setTitle("");
     setYears("");
     setNote("");
@@ -22,7 +23,7 @@ export function AddShowForm({ defaultStatus }: { defaultStatus: Status }) {
   return (
     <form
       onSubmit={submit}
-      className="tape grid gap-2 rounded-md border-dashed p-4 sm:grid-cols-[1.2fr_0.6fr_1.6fr_auto]"
+      className="tape grid gap-2 rounded-md border-dashed p-4 sm:grid-cols-[1.2fr_0.5fr_1.4fr_auto_auto]"
     >
       <input
         className="field"
@@ -45,6 +46,14 @@ export function AddShowForm({ defaultStatus }: { defaultStatus: Status }) {
         onChange={(e) => setNote(e.target.value)}
         aria-label="Note"
       />
+      <button
+        type="button"
+        onClick={() => setKind((k) => (k === "show" ? "movie" : "show"))}
+        className="rounded-sm border border-vhs-line px-3 py-2 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-dim transition-colors hover:text-vhs-amber"
+        aria-label={`Currently adding a ${kind}. Click to switch.`}
+      >
+        {kind}
+      </button>
       <button
         type="submit"
         className="rounded-sm border border-vhs-line px-4 py-2 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-cyan transition-colors hover:border-vhs-cyan"

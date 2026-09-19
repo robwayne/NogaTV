@@ -7,6 +7,8 @@ export type Show = {
   id: string;
   title: string;
   years: string;
+  /** Shows and movies both live in the library; the TV guide treats them differently. */
+  kind?: "show" | "movie";
   /** Two or three letters shown on the "tape label" when there's no artwork. */
   initials: string;
   /** Any CSS color — used for the tape spine and glow. */
@@ -25,14 +27,18 @@ export type Show = {
 };
 
 export const SITE = {
-  herName: "Sam", // TODO: her name
+  herName: "Noga",
+  herFullName: "Noga Frischoff",
   fromName: "Me", // TODO: your name
+  turning: 28,
+  friendsSince: 2020,
+  where: "Tel Aviv",
   // The big line at the top.
   title: "The Tapes",
   subtitle: "everything we've watched, everything we still have to",
   // Shown under the title.
   dedication:
-    "Happy birthday. This is every hour we spent on the couch, catalogued, plus all the ones we haven't spent yet.",
+    "Happy 28th, Noga. Friends since 2020, one of the first people I met in Tel Aviv, and a frankly unreasonable number of hours on the couch since. This is all of it, catalogued — plus everything we haven't watched yet.",
 };
 
 /** Shows we've watched together. */
@@ -115,6 +121,26 @@ export const WATCHLIST: Show[] = [
     tags: ["sitcom"],
   },
   {
+    id: "the-big-lebowski",
+    title: "The Big Lebowski",
+    years: "1998",
+    initials: "TBL",
+    color: "#e0c68c",
+    kind: "movie",
+    note: "TODO: why this one is next.",
+    tags: ["movie"],
+  },
+  {
+    id: "burn-after-reading",
+    title: "Burn After Reading",
+    years: "2008",
+    initials: "BAR",
+    color: "#8ce0d4",
+    kind: "movie",
+    note: "TODO: why this one is next.",
+    tags: ["movie"],
+  },
+  {
     id: "taskmaster",
     title: "Taskmaster",
     years: "2015–",
@@ -140,20 +166,37 @@ export const TOP_PICKS: { showId: string; blurb: string }[] = [
 /** Things I'm inspired by about her. */
 export const INSPIRATIONS: { heading: string; body: string }[] = [
   {
-    heading: "TODO: the first thing",
-    body: "TODO: a few sentences. Be specific — the specific thing is the whole gift.",
+    heading: "She makes things, and they're good",
+    body:
+      "The abstract work especially. I don't always know what I'm looking at and I've stopped needing to — it does something to me before I've worked out why, which I think is the whole point. She does the visuals and the art for her grandma too, and that tells you as much about her as the work itself does.",
   },
   {
-    heading: "TODO: the second thing",
-    body: "TODO.",
+    heading: "She got me into art",
+    body:
+      "I wasn't really an art person. Being around someone who takes it seriously, who makes it rather than just consumes it, rewired that. I look at things longer now. That's her fault.",
   },
   {
-    heading: "TODO: the third thing",
-    body: "TODO.",
+    heading: "She got me reading philosophy",
+    body:
+      "Books I would never have picked up on my own. Half the time I'm out of my depth and I keep going anyway, because she made it seem like a normal thing to spend your evening on instead of an intimidating one.",
+  },
+  {
+    heading: "She's genuinely giving",
+    body:
+      "Caring in the practical, unglamorous way — the kind that costs something. She doesn't think of herself as any of this, which is exactly why it lands. Being around it makes me want to be a better person, and I don't think she's ever noticed she's doing it.",
+  },
+  {
+    heading: "She's the person I try to impress",
+    body:
+      "There's a short list of people whose opinion actually reorganises how I think about something I've made or said. She's at the top of it, and she has no idea.",
   },
 ];
 
 /** The closing note. Keep it short; it lands harder. */
-export const LETTER = `TODO: the letter.
+export const LETTER = `Noga — happy 28th.
 
-A couple of paragraphs is plenty. Blank lines become paragraph breaks.`;
+Friends since 2020. One of the first people I met in Tel Aviv, and somehow still one of the most influential people in my life: the art, the books, the standard you set for how to treat people without ever making a thing of it.
+
+Most of what's catalogued on this site is us on a couch quoting Larry David at each other, which I realise is a strange way to measure a friendship. But it's hundreds of hours of choosing the same person's company over and over, and that's not nothing. There's a lot on the list we haven't watched yet. That's the part I like most about it.
+
+Here's to being friends until we're old and dead.`

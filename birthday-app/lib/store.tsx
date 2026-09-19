@@ -149,6 +149,7 @@ type Ctx = {
     note?: string;
     status: Status;
     seasons?: number[];
+    kind?: "show" | "movie";
   }) => void;
   setStatus: (id: string, status: Status) => void;
   removeShow: (id: string) => void;
@@ -227,7 +228,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         state.entries
           .filter((e) => e.showId === showId)
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-      addShow: ({ title, years, note, status, seasons }) => {
+      addShow: ({ title, years, note, status, seasons, kind }) => {
         const trimmed = title.trim();
         if (!trimmed) return;
         update((prev) => {
@@ -246,6 +247,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             color: PALETTE[taken.size % PALETTE.length],
             note: note?.trim() || "",
             status,
+            ...(kind ? { kind } : {}),
             ...(seasons && seasons.length ? { seasons } : {}),
             ...(status === "watched" && seasons?.length
               ? { progress: { seasonsWatched: seasons.length, seasonsTotal: seasons.length } }

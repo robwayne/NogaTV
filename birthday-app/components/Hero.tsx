@@ -1,6 +1,7 @@
 import { SITE } from "@/data/content";
 
 const NAV = [
+  { href: "/guide", label: "★ TV Guide" },
   { href: "#tonight", label: "Tonight" },
   { href: "#schedule", label: "Schedule" },
   { href: "#watched", label: "Watched" },
