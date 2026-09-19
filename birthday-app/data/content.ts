@@ -116,39 +116,6 @@ export const WATCHED: Show[] = [
 /** Shows we still have to watch. She can tick these off. */
 export const WATCHLIST: Show[] = [
   {
-    id: "wilfred",
-    title: "Party Down",
-    years: "2009–2023",
-    initials: "PD",
-    color: "#c58cff",
-    // Approximate episode counts — edit to taste.
-    seasons: [10, 10, 6],
-    note: "TODO: why this one is next.",
-    tags: ["sitcom"],
-  },
-  {
-    id: "detroiters",
-    title: "Detroiters",
-    years: "2017–2018",
-    initials: "DET",
-    color: "#ffb45e",
-    // Approximate episode counts — edit to taste.
-    seasons: [10, 10],
-    note: "TODO: why this one is next.",
-    tags: ["sitcom"],
-  },
-  {
-    id: "review",
-    title: "Review",
-    years: "2014–2017",
-    initials: "REV",
-    color: "#68e08a",
-    // Approximate episode counts — edit to taste.
-    seasons: [9, 10, 3],
-    note: "TODO: why this one is next.",
-    tags: ["sitcom"],
-  },
-  {
     id: "new-girl",
     title: "New Girl",
     years: "2011–2018",
@@ -157,37 +124,6 @@ export const WATCHLIST: Show[] = [
     seasons: [24, 25, 23, 22, 22, 22, 8],
     note: "TODO: Noga's pitch, in her words.",
     tags: ["sitcom", "noga's fault"],
-  },
-  {
-    id: "the-big-lebowski",
-    title: "The Big Lebowski",
-    years: "1998",
-    initials: "TBL",
-    color: "#e0c68c",
-    kind: "movie",
-    note: "TODO: why this one is next.",
-    tags: ["movie"],
-  },
-  {
-    id: "burn-after-reading",
-    title: "Burn After Reading",
-    years: "2008",
-    initials: "BAR",
-    color: "#8ce0d4",
-    kind: "movie",
-    note: "TODO: why this one is next.",
-    tags: ["movie"],
-  },
-  {
-    id: "taskmaster",
-    title: "Taskmaster",
-    years: "2015–",
-    initials: "TM",
-    color: "#ff6b6b",
-    // Approximate episode counts — edit to taste.
-    seasons: [6, 6, 6, 8, 8, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-    note: "TODO: why this one is next.",
-    tags: ["panel show"],
   },
 ];
 
@@ -242,15 +178,6 @@ export const RECOMMENDATIONS: Rec[] = [
     showId: "sunny",
     note: "TODO: your pitch.",
     done: true,
-  },
-  {
-    id: "rec-lebowski",
-    title: "The Big Lebowski",
-    kind: "film",
-    year: "1998",
-    by: "me",
-    showId: "the-big-lebowski",
-    note: "TODO: your pitch.",
   },
 
   // ── things she pushed on me ─────────────────────────────────────────────
