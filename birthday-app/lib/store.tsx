@@ -110,6 +110,8 @@ const EMPTY: Persisted = {
 
 const KEY = "tapes.v1";
 
+const SEED_SHOWS: Show[] = [...WATCHED, ...WATCHLIST];
+
 const PALETTE = [
   "#f7d046",
   "#4ce0b3",
@@ -153,6 +155,45 @@ export function initialsFor(title: string) {
   if (words.length === 0) return "??";
   if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
   return words.slice(0, 3).map((w) => w[0]).join("").toUpperCase();
+}
+
+
+/**
+ * A recommendation for something watchable should also exist in the library,
+ * otherwise the shuffler and the guide can't actually suggest it. Matches an
+ * existing show by title first; failing that, creates one on the watchlist.
+ * Books are left alone — nothing is going to schedule a book for Tuesday.
+ */
+function linkRecToLibrary(
+  prev: Persisted,
+  rec: Rec,
+  seedShows: Show[],
+): { rec: Rec; customShows: (Show & { status: Status })[] } {
+  if (rec.kind === "book" || rec.showId) return { rec, customShows: prev.customShows };
+
+  const title = rec.title.trim().toLowerCase();
+  const existing = [...seedShows, ...prev.customShows].find(
+    (s) => s.title.trim().toLowerCase() === title && !prev.removedIds.includes(s.id),
+  );
+  if (existing) return { rec: { ...rec, showId: existing.id }, customShows: prev.customShows };
+
+  const taken = new Set([...seedShows.map((s) => s.id), ...prev.customShows.map((s) => s.id)]);
+  let id = slugify(rec.title);
+  let n = 2;
+  while (taken.has(id)) id = `${slugify(rec.title)}-${n++}`;
+
+  const show: Show & { status: Status } = {
+    id,
+    title: rec.title.trim(),
+    years: rec.year?.trim() || "",
+    initials: initialsFor(rec.title),
+    color: PALETTE[taken.size % PALETTE.length],
+    note: rec.note?.trim() || "",
+    status: "watchlist",
+    ...(rec.kind === "film" ? { kind: "movie" as const } : {}),
+  };
+
+  return { rec: { ...rec, showId: id }, customShows: [...prev.customShows, show] };
 }
 
 type Ctx = {
@@ -311,21 +352,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           let id = `rec-${slugify(title)}`;
           let n = 2;
           while (taken.has(id)) id = `rec-${slugify(title)}-${n++}`;
-          return { ...prev, customRecs: [...prev.customRecs, { ...rec, title, id }] };
+
+          const linked = linkRecToLibrary(prev, { ...rec, title, id }, SEED_SHOWS);
+          return {
+            ...prev,
+            customRecs: [...prev.customRecs, linked.rec],
+            customShows: linked.customShows,
+          };
         }),
       updateRec: (id, patch) =>
         update((prev) => {
           // A custom one is edited in place; a seeded one gets an overlay so
           // data/content.ts stays the original.
+          const current = recs.find((r) => r.id === id);
+          const merged = current ? ({ ...current, ...patch } as Rec) : undefined;
+          const linked = merged
+            ? linkRecToLibrary(prev, merged, SEED_SHOWS)
+            : { rec: undefined, customShows: prev.customShows };
+          const withLink = linked.rec?.showId ? { showId: linked.rec.showId } : {};
+
           if (prev.customRecs.some((r) => r.id === id)) {
             return {
               ...prev,
-              customRecs: prev.customRecs.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+              customShows: linked.customShows,
+              customRecs: prev.customRecs.map((r) =>
+                r.id === id ? { ...r, ...patch, ...withLink } : r,
+              ),
             };
           }
           return {
             ...prev,
-            recEdits: { ...prev.recEdits, [id]: { ...prev.recEdits[id], ...patch } },
+            customShows: linked.customShows,
+            recEdits: {
+              ...prev.recEdits,
+              [id]: { ...prev.recEdits[id], ...patch, ...withLink },
+            },
           };
         }),
       toggleRecDone: (id) =>
