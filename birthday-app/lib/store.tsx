@@ -69,6 +69,8 @@ type Persisted = {
   customRecs: Rec[];
   recDone: Record<string, boolean>;
   removedRecIds: string[];
+  /** Edits layered over the seeded recommendations in data/content.ts. */
+  recEdits: Record<string, Partial<Rec>>;
   statusOverrides: Record<string, Status>;
   removedIds: string[];
   plans: Plan[];
@@ -91,6 +93,7 @@ const EMPTY: Persisted = {
   customRecs: [],
   recDone: {},
   removedRecIds: [],
+  recEdits: {},
   statusOverrides: {},
   removedIds: [],
   plans: [],
@@ -171,6 +174,7 @@ type Ctx = {
   episodeRating: (showId: string, season: number, episode: number) => number;
   recs: LibraryRec[];
   addRec: (rec: Omit<Rec, "id">) => void;
+  updateRec: (id: string, patch: Partial<Omit<Rec, "id">>) => void;
   toggleRecDone: (id: string) => void;
   removeRec: (id: string) => void;
   addShow: (input: {
@@ -224,7 +228,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const custom: LibraryRec[] = state.customRecs.map((r) => ({ ...r, custom: true }));
     return [...seed, ...custom]
       .filter((r) => !state.removedRecIds.includes(r.id))
-      .map((r) => ({ ...r, done: state.recDone[r.id] ?? r.done ?? false }));
+      .map((r) => ({
+        ...r,
+        ...state.recEdits[r.id],
+        done: state.recDone[r.id] ?? r.done ?? false,
+      }));
   }, [state]);
 
   const value = useMemo<Ctx>(() => {
@@ -297,6 +305,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           while (taken.has(id)) id = `rec-${slugify(title)}-${n++}`;
           return { ...prev, customRecs: [...prev.customRecs, { ...rec, title, id }] };
         }),
+      updateRec: (id, patch) =>
+        update((prev) => {
+          // A custom one is edited in place; a seeded one gets an overlay so
+          // data/content.ts stays the original.
+          if (prev.customRecs.some((r) => r.id === id)) {
+            return {
+              ...prev,
+              customRecs: prev.customRecs.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+            };
+          }
+          return {
+            ...prev,
+            recEdits: { ...prev.recEdits, [id]: { ...prev.recEdits[id], ...patch } },
+          };
+        }),
       toggleRecDone: (id) =>
         update((prev) => ({
           ...prev,
@@ -312,6 +335,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           removedRecIds: prev.removedRecIds.includes(id)
             ? prev.removedRecIds
             : [...prev.removedRecIds, id],
+          recEdits: Object.fromEntries(
+            Object.entries(prev.recEdits).filter(([key]) => key !== id),
+          ),
         })),
       entriesForShow: (showId) =>
         state.entries

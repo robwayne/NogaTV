@@ -12,7 +12,90 @@ const KIND_LABEL: Record<Rec["kind"], string> = {
 };
 
 function RecRow({ rec }: { rec: LibraryRec }) {
-  const { toggleRecDone, removeRec } = useStore();
+  const { toggleRecDone, removeRec, updateRec } = useStore();
+  const [editing, setEditing] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [draft, setDraft] = useState({
+    title: rec.title,
+    year: rec.year ?? "",
+    note: rec.note ?? "",
+    kind: rec.kind,
+  });
+
+  function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!draft.title.trim()) return;
+    updateRec(rec.id, {
+      title: draft.title.trim(),
+      year: draft.year.trim(),
+      note: draft.note.trim(),
+      kind: draft.kind,
+    });
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <li className="tape rounded-md p-3">
+        <form onSubmit={save} className="grid gap-2">
+          <div className="grid gap-2 sm:grid-cols-[1.4fr_0.6fr_auto]">
+            <input
+              className="field"
+              value={draft.title}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              aria-label="Title"
+              autoFocus
+            />
+            <input
+              className="field"
+              placeholder="years"
+              value={draft.year}
+              onChange={(e) => setDraft({ ...draft, year: e.target.value })}
+              aria-label="Years"
+            />
+            <button
+              type="button"
+              onClick={() =>
+                setDraft({
+                  ...draft,
+                  kind: draft.kind === "show" ? "film" : draft.kind === "film" ? "book" : "show",
+                })
+              }
+              className="rounded-sm border border-vhs-line px-3 py-2 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-dim hover:text-vhs-amber"
+              aria-label={`Currently a ${draft.kind}. Click to change.`}
+            >
+              {draft.kind}
+            </button>
+          </div>
+
+          <input
+            className="field"
+            placeholder="the pitch"
+            value={draft.note}
+            onChange={(e) => setDraft({ ...draft, note: e.target.value })}
+            aria-label="Note"
+          />
+
+          <div className="flex gap-3 text-[0.65rem] uppercase tracking-[0.2em]">
+            <button
+              type="submit"
+              className="rounded-sm border border-vhs-cyan px-3 py-1.5 text-vhs-cyan hover:bg-vhs-cyan/10"
+            >
+              save
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="text-vhs-dim hover:text-vhs-text"
+            >
+              cancel
+            </button>
+          </div>
+        </form>
+      </li>
+    );
+  }
+
   return (
     <li className="tape flex items-start gap-3 rounded-md p-3">
       <button
@@ -39,18 +122,43 @@ function RecRow({ rec }: { rec: LibraryRec }) {
           </span>
         </div>
         {rec.note ? <p className="mt-1 text-xs leading-relaxed text-vhs-dim">{rec.note}</p> : null}
-      </div>
 
-      {rec.custom ? (
-        <button
-          type="button"
-          onClick={() => removeRec(rec.id)}
-          className="text-vhs-line hover:text-vhs-magenta"
-          aria-label="Remove"
-        >
-          ✕
-        </button>
-      ) : null}
+        <div className="mt-2 flex flex-wrap gap-3 text-[0.6rem] uppercase tracking-[0.2em]">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-vhs-dim hover:text-vhs-amber"
+          >
+            edit
+          </button>
+          {confirmRemove ? (
+            <>
+              <button
+                type="button"
+                onClick={() => removeRec(rec.id)}
+                className="text-vhs-magenta hover:underline"
+              >
+                really remove?
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmRemove(false)}
+                className="text-vhs-line hover:text-vhs-text"
+              >
+                keep it
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmRemove(true)}
+              className="text-vhs-dim hover:text-vhs-magenta"
+            >
+              remove
+            </button>
+          )}
+        </div>
+      </div>
     </li>
   );
 }

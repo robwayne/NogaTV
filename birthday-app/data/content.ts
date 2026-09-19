@@ -125,6 +125,16 @@ export const WATCHLIST: Show[] = [
     tags: ["sitcom"],
   },
   {
+    id: "new-girl",
+    title: "New Girl",
+    years: "2011–2018",
+    initials: "NG",
+    color: "#ff9ec4",
+    seasons: [24, 25, 23, 22, 22, 22, 8],
+    note: "TODO: Noga's pitch, in her words.",
+    tags: ["sitcom", "noga's fault"],
+  },
+  {
     id: "the-big-lebowski",
     title: "The Big Lebowski",
     years: "1998",
@@ -233,11 +243,13 @@ export const RECOMMENDATIONS: Rec[] = [
     note: "TODO: her pitch, as she made it.",
   },
   {
-    id: "rec-her-show",
-    title: "TODO: a show Noga put you onto",
+    id: "rec-new-girl",
+    title: "New Girl",
     kind: "show",
+    year: "2011–2018",
     by: "her",
-    note: "TODO.",
+    showId: "new-girl",
+    note: "TODO: her pitch, as she made it.",
   },
 ];
 
