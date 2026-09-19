@@ -1,17 +1,18 @@
 /**
  * The TV Guide channel.
  *
- * Builds one calendar day of listings — midnight to midnight — out of whatever
- * is in the library. The schedule is seeded off the date, so it's stable for
- * the whole of that day and turns over into a fresh lineup at midnight.
+ * One channel per show, each one running that show around the clock. The
+ * slots hold episode recommendations rather than a real running order: the
+ * ranking engine decides what's worth putting on, so the episodes we haven't
+ * watched — or rate highest — come first, and nothing repeats until the whole
+ * run has been through the day.
  *
- * Episodes aren't picked at random: anything we've logged fewer times gets
- * priority, so the guide keeps steering us at the parts of a show we've spent
- * the least time with.
+ * The schedule is seeded off the date, so it holds for the whole of that day
+ * and turns over into a fresh lineup at midnight.
  */
 
 import { SITE } from "@/data/content";
-import { qualityOf, type RatingLookup } from "@/lib/rank";
+import { qualityOf, rankCandidates, rankShows, type RatingLookup } from "@/lib/rank";
 import type { LibraryShow, LogEntry } from "@/lib/store";
 
 export type Program = {
@@ -27,7 +28,8 @@ export type Program = {
 };
 
 export type Channel = {
-  number: string;
+  /** The show this channel runs around the clock. */
+  show: LibraryShow;
   name: string;
   tint: string;
   /** Printed in the preview pane when this channel is highlighted. */
@@ -156,93 +158,62 @@ export function leastSeenEpisode(
   return best[Math.floor(rand() * best.length)];
 }
 
-function episodeLabel(
-  show: LibraryShow,
-  rand: () => number,
-  counts: WatchCounts,
-  ratings?: RatingLookup,
-) {
-  const ep = leastSeenEpisode(show, rand, counts, ratings);
-  return ep ? formatEpisodeCode(ep.season, ep.episode) : null;
-}
-
 function pick<T>(items: T[], rand: () => number): T {
   return items[Math.floor(rand() * items.length)];
 }
 
-/** Shows we've logged less often — and rate more highly — come up more often. */
-function pickShow(
-  pool: LibraryShow[],
-  rand: () => number,
-  counts: WatchCounts,
-  ratings?: RatingLookup,
-): LibraryShow {
-  const weights = pool.map((s) => {
-    const fatigue = 1 / (1 + (counts.byShow.get(s.id) ?? 0));
-    const stars = ratings?.showRating(s.id) ?? 0;
-    return fatigue * (stars ? 0.5 + stars / 5 : 1);
-  });
-  const total = weights.reduce((a, b) => a + b, 0);
-  let target = rand() * total;
-  for (let i = 0; i < pool.length; i++) {
-    target -= weights[i];
-    if (target <= 0) return pool[i];
-  }
-  return pool[pool.length - 1];
-}
-
-/** Fill a channel's 24 hours with back-to-back programming. */
-function fillDay(
-  pool: LibraryShow[],
-  rand: () => number,
-  counts: WatchCounts,
-  ratings: RatingLookup | undefined,
-  opts: { marathon?: boolean } = {},
-) {
+/**
+ * Fill one show's 24 hours. Episodes come off the ranking engine best-first,
+ * so a channel reads as a running list of what to watch next rather than a
+ * broadcast order, and nothing repeats until the show runs out.
+ */
+function fillDay(show: LibraryShow, rand: () => number, ratings: RatingLookup) {
   const programs: Program[] = [];
-  if (pool.length === 0) return programs;
+  const isMovie = show.kind === "movie";
+
+  const queue = isMovie
+    ? []
+    : rankCandidates([show], [], ratings, { deterministic: true })
+        .map((c) => c.code)
+        .filter((code): code is string => Boolean(code));
+
+  const blurbs = isMovie ? BLURBS_MOVIE : show.status === "watchlist" ? BLURBS_NEW : BLURBS_SHOW;
 
   let slot = 0;
-  const marathonShow: LibraryShow | null = opts.marathon
-    ? pickShow(pool, rand, counts, ratings)
-    : null;
+  let next = 0;
+  let lastBlurb = "";
 
   while (slot < SLOTS_PER_DAY) {
-    const show = marathonShow ?? pickShow(pool, rand, counts, ratings);
-    const isMovie = show.kind === "movie";
-    // Movies run long, marathons run in one-hour chunks, everything else is
-    // a 30 or 60 minute block.
-    const span = isMovie ? 4 : opts.marathon ? 2 : rand() > 0.65 ? 2 : 1;
-    const blurbs = isMovie
-      ? BLURBS_MOVIE
-      : show.status === "watchlist"
-        ? BLURBS_NEW
-        : BLURBS_SHOW;
+    // A film fills an evening; an episode takes half an hour or an hour.
+    const span = isMovie ? 4 : rand() > 0.65 ? 2 : 1;
+
+    // Two identical lines in a row reads like a bug, so nudge past a repeat.
+    let blurb = pick(blurbs, rand);
+    if (blurb === lastBlurb) blurb = pick(blurbs, rand);
+    lastBlurb = blurb;
 
     programs.push({
       start: slot,
       span: Math.min(span, SLOTS_PER_DAY - slot),
       show,
-      episode: episodeLabel(show, rand, counts, ratings),
-      blurb: pick(blurbs, rand),
+      episode: queue.length ? queue[next % queue.length] : null,
+      blurb,
     });
+
+    next += 1;
     slot += span;
   }
 
   return programs;
 }
 
-/**
- * Build the day's channel lineup. Channels that have nothing to show (no
- * movies in the library yet, say) are dropped rather than left empty.
- */
 /** Which half of the library the guide is allowed to broadcast. */
 export type GuideFilter = "all" | "watched" | "watchlist";
 
+/** Every show in the library gets a channel of its own. */
 export function buildGuide(
   allShows: LibraryShow[],
   entries: LogEntry[],
-  herProfileId: string,
   date = new Date(),
   filter: GuideFilter = "all",
   ratings?: RatingLookup,
@@ -251,87 +222,22 @@ export function buildGuide(
   if (shows.length === 0) return [];
 
   const rand = rng(seedFromDate(date));
-  const counts = countWatches(entries);
-  const watched = shows.filter((s) => s.status === "watched");
-  const watchlist = shows.filter((s) => s.status === "watchlist");
-  const movies = shows.filter((s) => s.kind === "movie");
+  const lookup: RatingLookup = ratings ?? { showRating: () => 0, episodeRating: () => 0 };
 
-  const loggedIds = new Set(entries.map((e) => e.showId));
-  const ours = shows.filter((s) => loggedIds.has(s.id));
+  // The channels worth watching sit at the top of the scroll.
+  const ordered = ratings ? rankShows(shows, entries, lookup).map((r) => r.show) : shows;
 
-  const herFavourites = shows.filter((s) =>
-    entries.some((e) => e.profileId === herProfileId && e.showId === s.id && e.rating >= 4),
-  );
-
-  const defs: { number: string; name: string; tint: string; tagline: string; pool: LibraryShow[]; marathon?: boolean }[] = [
-    {
-      number: "02",
-      name: "THE VAULT",
-      tint: "#ffcc4d",
-      tagline: "Everything we've already seen, running forever, like we asked for it.",
-      pool: watched.length ? watched : shows,
-    },
-    {
-      number: "04",
-      name: "NEW TAPES",
-      tint: "#4ce0e8",
-      tagline: "The watchlist, pretending we ever intended to start it.",
-      pool: watchlist.length ? watchlist : shows,
-    },
-    {
-      number: "07",
-      name: "MARATHON",
-      tint: "#ff4ecd",
-      tagline: "One show. All day. The negotiation is over.",
-      pool: shows,
-      marathon: true,
-    },
-    {
-      number: "09",
-      name: "THE MOVIES",
-      tint: "#c58cff",
-      tagline: "Feature length. Someone is falling asleep by minute forty.",
-      pool: movies,
-    },
-    {
-      number: "11",
-      name: "RANDOM ACCESS",
-      tint: "#68e08a",
-      tagline: "No taste, no theme, no accountability.",
-      pool: shows,
-    },
-    {
-      number: "13",
-      name: `${SITE.herName.toUpperCase()}'S PICKS`,
-      tint: "#ff8fb1",
-      tagline: "Four stars and up, per her. She's usually right and we don't discuss it.",
-      pool: herFavourites,
-    },
-    {
-      number: "22",
-      name: "THE LOG",
-      tint: "#7ec8ff",
-      tagline: "The ones we cared enough to have opinions about in writing.",
-      pool: ours,
-    },
-    {
-      number: "31",
-      name: "LATE NIGHT",
-      tint: "#ffb45e",
-      tagline: "The 2am channel. Nobody remembers agreeing to this.",
-      pool: shows,
-    },
-  ];
-
-  return defs
-    .filter((d) => d.pool.length > 0)
-    .map((d) => ({
-      number: d.number,
-      name: d.name,
-      tint: d.tint,
-      tagline: d.tagline,
-      programs: fillDay(d.pool, rand, counts, ratings, { marathon: d.marathon }),
-    }));
+  return ordered.map((show) => ({
+    show,
+    name: show.title,
+    tint: show.color,
+    tagline:
+      show.note?.trim() ||
+      (show.status === "watchlist"
+        ? "Twenty-four hours of something we have never once started."
+        : "All day, every day. No scheduling conflicts here."),
+    programs: fillDay(show, rand, lookup),
+  }));
 }
 
 export function programAt(channel: Channel, slot: number) {

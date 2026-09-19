@@ -23,10 +23,7 @@ const COLUMNS = 3;
 
 /** The blue-and-gold listings grid, scrolling on its own like it's 1996. */
 export function TvGuide() {
-  const { ready, shows, entries, profiles, setPlan, showRating, episodeRating, serviceFor } =
-    useStore();
-  const herId = profiles[0]?.id ?? "her";
-
+  const { ready, shows, entries, setPlan, showRating, episodeRating, serviceFor } = useStore();
   const [slot, setSlot] = useState(() => currentSlot());
   // The lineup belongs to one calendar day; when the date rolls over at
   // midnight this changes and the whole guide rebuilds.
@@ -41,11 +38,11 @@ export function TvGuide() {
   const channels = useMemo(
     () =>
       ready
-        ? buildGuide(shows, entries, herId, new Date(day), filter, { showRating, episodeRating })
+        ? buildGuide(shows, entries, new Date(day), filter, { showRating, episodeRating })
         : [],
     // showRating/episodeRating change identity whenever a rating does, which is
     // exactly when the lineup should be rebuilt.
-    [ready, shows, entries, herId, day, filter, showRating, episodeRating],
+    [ready, shows, entries, day, filter, showRating, episodeRating],
   );
 
   // Creep down the channel list the way the real thing did.
@@ -180,7 +177,9 @@ export function TvGuide() {
                 fallback={!serviceFor(highlight.program.show.id).chosen}
                 size="md"
               />
-              <span style={{ color: highlight.channel.tint }}>{highlight.channel.name}</span>
+              <span style={{ color: highlight.channel.tint }}>
+                {highlight.channel.name} · 24/7
+              </span>
             </div>
             <h3 className="mt-2 text-2xl font-bold leading-tight text-[#ffd84d] sm:text-4xl">
               {highlight.program.show.title}
@@ -270,7 +269,7 @@ export function TvGuide() {
         >
           {rows.map((channel, i) => (
             <div
-              key={`${channel.number}-${i}`}
+              key={`${channel.show.id}-${i}`}
               className="grid grid-cols-[6.75rem_1fr] border-b border-[#1c2780] sm:grid-cols-[8rem_repeat(3,1fr)]"
               style={{ height: ROW_HEIGHT }}
             >
@@ -278,21 +277,14 @@ export function TvGuide() {
                 className="flex flex-col justify-center gap-1 border-r border-[#2b3aa0] px-3"
                 style={{ background: `linear-gradient(90deg, ${channel.tint}22, transparent)` }}
               >
-                {(() => {
-                  // The "channel number" is wherever the thing currently on
-                  // this channel can actually be watched.
-                  const onNow = programAt(channel, columns[0]);
-                  if (!onNow) {
-                    return (
-                      <span className="text-lg font-bold" style={{ color: channel.tint }}>
-                        {channel.number}
-                      </span>
-                    );
-                  }
-                  const where = serviceFor(onNow.show.id);
-                  return <ServiceBadge id={where.id} fallback={!where.chosen} />;
-                })()}
-                <span className="text-[0.55rem] uppercase leading-tight tracking-[0.15em] text-[#8fa2ff]">
+                <ServiceBadge
+                  id={serviceFor(channel.show.id).id}
+                  fallback={!serviceFor(channel.show.id).chosen}
+                />
+                <span
+                  className="text-[0.6rem] font-bold uppercase leading-tight tracking-[0.1em]"
+                  style={{ color: channel.tint }}
+                >
                   {channel.name}
                 </span>
               </div>

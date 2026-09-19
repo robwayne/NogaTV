@@ -6,7 +6,7 @@ export default function GuidePage() {
     <Page
       index="08"
       title="The Guide"
-      blurb="Eight channels, all of them built out of our own library, because apparently that's what I do with my free time now. Runs midnight to midnight and rebuilds itself every day. It favours the episodes we've watched least and rate highest, and you can point it at what we've already seen or only at what we haven't."
+      blurb="One channel per show, each running its own 24/7 marathon, because apparently that's what I do with my free time now. The time slots aren't a broadcast order — they're episode recommendations, best first, so the ones we haven't watched or rate highest turn up early and nothing repeats until the show runs out. Rebuilds itself every day at midnight. Point it at what we've already seen or only at what we haven't."
     >
       <TvGuide />
     </Page>
