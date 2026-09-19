@@ -22,7 +22,7 @@ export function ServiceBadge({
   return (
     <span
       title={title ?? (fallback ? `${service.name} (assumed)` : `On ${service.name}`)}
-      className={`inline-flex items-center gap-1 rounded-sm border font-bold uppercase leading-none tracking-[0.1em] ${padding} ${text}`}
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-sm border font-bold uppercase leading-none tracking-[0.08em] ${padding} ${text}`}
       style={{
         borderColor: service.color,
         color: service.color,
@@ -34,7 +34,7 @@ export function ServiceBadge({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={service.image} alt={service.name} className="h-3 w-auto" />
       ) : (
-        service.mark
+        service.name
       )}
     </span>
   );

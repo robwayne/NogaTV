@@ -18,7 +18,7 @@ import {
   useState,
 } from "react";
 import { RECOMMENDATIONS, SITE, WATCHED, WATCHLIST, type Rec, type Show } from "@/data/content";
-import { DEFAULT_SERVICE } from "@/lib/services";
+import { DEFAULT_SERVICE, isKnownService } from "@/lib/services";
 
 export type Status = "watched" | "watchlist";
 
@@ -413,7 +413,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           .filter((e) => e.showId === showId)
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
       serviceFor: (showId) => {
-        const chosen = state.services[showId] ?? shows.find((s) => s.id === showId)?.service;
+        const stored = state.services[showId] ?? shows.find((s) => s.id === showId)?.service;
+        // A service we've since dropped from the list counts as unset.
+        const chosen = isKnownService(stored) ? stored : undefined;
         return { id: chosen ?? DEFAULT_SERVICE, chosen: Boolean(chosen) };
       },
       setService: (showId, service) =>

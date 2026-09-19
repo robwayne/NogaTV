@@ -273,8 +273,7 @@ export const LOCK = {
   day: 24,
   /** How many days it stays open, counting the birthday itself. */
   openDays: 3,
-  /** TODO: set your password. */
-  password: "change-me",
+  password: "19980924",
 };
 
 /** Things I'm inspired by about her. */

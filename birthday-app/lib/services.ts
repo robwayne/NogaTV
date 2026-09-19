@@ -9,8 +9,6 @@
 export type Service = {
   id: string;
   name: string;
-  /** What goes inside the badge. Kept to four characters or fewer. */
-  mark: string;
   color: string;
   /** Optional path to a real logo, e.g. "/services/netflix.svg". */
   image?: string;
@@ -20,19 +18,18 @@ export type Service = {
 export const DEFAULT_SERVICE = "stremio";
 
 export const SERVICES: Service[] = [
-  { id: "stremio", name: "Stremio", mark: "STR", color: "#7b5bf5" },
-  { id: "netflix", name: "Netflix", mark: "N", color: "#e50914" },
-  { id: "max", name: "Max", mark: "MAX", color: "#4b6fff" },
-  { id: "hulu", name: "Hulu", mark: "hulu", color: "#1ce783" },
-  { id: "disney", name: "Disney+", mark: "D+", color: "#5b8cff" },
-  { id: "prime", name: "Prime Video", mark: "prime", color: "#00a8e1" },
-  { id: "appletv", name: "Apple TV+", mark: "tv+", color: "#d8d8d8" },
-  { id: "paramount", name: "Paramount+", mark: "P+", color: "#4a8dff" },
-  { id: "peacock", name: "Peacock", mark: "PCK", color: "#ffcc4d" },
-  { id: "youtube", name: "YouTube", mark: "YT", color: "#ff4444" },
-  { id: "other", name: "Somewhere else", mark: "?", color: "#9b91c4" },
+  { id: "stremio", name: "Stremio", color: "#7b5bf5" },
+  { id: "netflix", name: "Netflix", color: "#e50914" },
+  { id: "disney", name: "Disney+", color: "#5b8cff" },
+  { id: "appletv", name: "Apple TV+", color: "#d8d8d8" },
+  { id: "youtube", name: "YouTube", color: "#ff4444" },
 ];
 
 export function serviceById(id: string | undefined): Service {
   return SERVICES.find((s) => s.id === id) ?? SERVICES[0];
+}
+
+/** False for anything that isn't one of the services above any more. */
+export function isKnownService(id: string | undefined): boolean {
+  return SERVICES.some((s) => s.id === id);
 }

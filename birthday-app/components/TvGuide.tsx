@@ -217,7 +217,7 @@ export function TvGuide() {
       </div>
 
       {/* ── time header ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-[5rem_1fr] border-b border-[#2b3aa0] bg-[#0b1352] text-[0.6rem] uppercase tracking-[0.2em] text-[#8fa2ff] sm:grid-cols-[6.5rem_repeat(3,1fr)] sm:text-[0.65rem]">
+      <div className="grid grid-cols-[6.75rem_1fr] border-b border-[#2b3aa0] bg-[#0b1352] text-[0.6rem] uppercase tracking-[0.2em] text-[#8fa2ff] sm:grid-cols-[8rem_repeat(3,1fr)] sm:text-[0.65rem]">
         <div className="flex items-center gap-2 px-3 py-2">
           <button
             type="button"
@@ -271,7 +271,7 @@ export function TvGuide() {
           {rows.map((channel, i) => (
             <div
               key={`${channel.number}-${i}`}
-              className="grid grid-cols-[5rem_1fr] border-b border-[#1c2780] sm:grid-cols-[6.5rem_repeat(3,1fr)]"
+              className="grid grid-cols-[6.75rem_1fr] border-b border-[#1c2780] sm:grid-cols-[8rem_repeat(3,1fr)]"
               style={{ height: ROW_HEIGHT }}
             >
               <div
