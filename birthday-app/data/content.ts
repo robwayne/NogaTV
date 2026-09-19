@@ -70,14 +70,18 @@ export const WATCHED: Show[] = [
     tags: ["sitcom", "quoted daily"],
   },
   {
-    id: "office",
-    title: "The Office",
-    years: "2005–2013",
-    initials: "OFF",
+    id: "reno911",
+    title: "Reno 911!",
+    years: "2003–",
+    initials: "R911",
     color: "#7ec8ff",
-    progress: { seasonsWatched: 9, seasonsTotal: 9 },
-    note: "TODO: replace or delete this one.",
-    tags: ["sitcom", "comfort rewatch"],
+    progress: { seasonsWatched: 6, seasonsTotal: 8 },
+    // Approximate episode counts — edit if you want the shuffler to be exact.
+    seasons: [14, 18, 15, 13, 12, 16, 15, 12],
+    note: "TODO: what Reno is to the two of you.",
+    favoriteEpisode: "TODO: your favorite episode",
+    quote: "TODO: a line you both quote constantly",
+    tags: ["sitcom", "quoted daily"],
   },
   {
     id: "30rock",
@@ -236,6 +240,27 @@ export const RECOMMENDATIONS: Rec[] = [
     note: "TODO.",
   },
 ];
+
+/**
+ * The lock on the inspiration page.
+ *
+ * It opens on her birthday and stays open for `openDays` days, then goes back
+ * behind the password. Outside that window the page is still reachable with
+ * the password, and the menu link is hidden.
+ *
+ * Worth knowing: this is a lock on a door, not a safe. The page is a static
+ * site, so the words below ship inside it — anyone determined enough to read
+ * the page source can read them early. It stops a casual peek, nothing more.
+ */
+export const LOCK = {
+  /** Month is 1-based. September 24th. */
+  month: 9,
+  day: 24,
+  /** How many days it stays open, counting the birthday itself. */
+  openDays: 3,
+  /** TODO: set your password. */
+  password: "change-me",
+};
 
 /** Things I'm inspired by about her. */
 export const INSPIRATIONS: { heading: string; body: string }[] = [

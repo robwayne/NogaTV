@@ -11,6 +11,7 @@
  */
 
 import { SITE } from "@/data/content";
+import { qualityOf, type RatingLookup } from "@/lib/rank";
 import type { LibraryShow, LogEntry } from "@/lib/store";
 
 export type Program = {
@@ -126,22 +127,26 @@ export function leastSeenEpisode(
   show: LibraryShow,
   rand: () => number,
   counts: WatchCounts,
+  ratings?: RatingLookup,
 ): { season: number; episode: number } | null {
   if (show.kind === "movie") return null;
   const seasons = show.seasons;
   if (!seasons?.length) return null;
 
   let best: { season: number; episode: number }[] = [];
-  let bestCount = Infinity;
+  let bestRank = -Infinity;
 
   seasons.forEach((episodeCount, index) => {
     const season = index + 1;
     for (let episode = 1; episode <= episodeCount; episode++) {
       const seen = counts.byEpisode.get(episodeKey(show.id, season, episode)) ?? 0;
-      if (seen < bestCount) {
-        bestCount = seen;
+      // Fewest watches first, then whatever we rate highest among those.
+      const quality = ratings ? qualityOf(show, ratings, season, episode).quality : 0;
+      const rank = -seen * 100 + quality;
+      if (rank > bestRank) {
+        bestRank = rank;
         best = [{ season, episode }];
-      } else if (seen === bestCount) {
+      } else if (rank === bestRank) {
         best.push({ season, episode });
       }
     }
@@ -151,8 +156,13 @@ export function leastSeenEpisode(
   return best[Math.floor(rand() * best.length)];
 }
 
-function episodeLabel(show: LibraryShow, rand: () => number, counts: WatchCounts) {
-  const ep = leastSeenEpisode(show, rand, counts);
+function episodeLabel(
+  show: LibraryShow,
+  rand: () => number,
+  counts: WatchCounts,
+  ratings?: RatingLookup,
+) {
+  const ep = leastSeenEpisode(show, rand, counts, ratings);
   return ep ? formatEpisodeCode(ep.season, ep.episode) : null;
 }
 
@@ -160,9 +170,18 @@ function pick<T>(items: T[], rand: () => number): T {
   return items[Math.floor(rand() * items.length)];
 }
 
-/** Shows we've logged less often come up more often. */
-function pickShow(pool: LibraryShow[], rand: () => number, counts: WatchCounts): LibraryShow {
-  const weights = pool.map((s) => 1 / (1 + (counts.byShow.get(s.id) ?? 0)));
+/** Shows we've logged less often — and rate more highly — come up more often. */
+function pickShow(
+  pool: LibraryShow[],
+  rand: () => number,
+  counts: WatchCounts,
+  ratings?: RatingLookup,
+): LibraryShow {
+  const weights = pool.map((s) => {
+    const fatigue = 1 / (1 + (counts.byShow.get(s.id) ?? 0));
+    const stars = ratings?.showRating(s.id) ?? 0;
+    return fatigue * (stars ? 0.5 + stars / 5 : 1);
+  });
   const total = weights.reduce((a, b) => a + b, 0);
   let target = rand() * total;
   for (let i = 0; i < pool.length; i++) {
@@ -177,16 +196,19 @@ function fillDay(
   pool: LibraryShow[],
   rand: () => number,
   counts: WatchCounts,
+  ratings: RatingLookup | undefined,
   opts: { marathon?: boolean } = {},
 ) {
   const programs: Program[] = [];
   if (pool.length === 0) return programs;
 
   let slot = 0;
-  const marathonShow: LibraryShow | null = opts.marathon ? pickShow(pool, rand, counts) : null;
+  const marathonShow: LibraryShow | null = opts.marathon
+    ? pickShow(pool, rand, counts, ratings)
+    : null;
 
   while (slot < SLOTS_PER_DAY) {
-    const show = marathonShow ?? pickShow(pool, rand, counts);
+    const show = marathonShow ?? pickShow(pool, rand, counts, ratings);
     const isMovie = show.kind === "movie";
     // Movies run long, marathons run in one-hour chunks, everything else is
     // a 30 or 60 minute block.
@@ -201,7 +223,7 @@ function fillDay(
       start: slot,
       span: Math.min(span, SLOTS_PER_DAY - slot),
       show,
-      episode: episodeLabel(show, rand, counts),
+      episode: episodeLabel(show, rand, counts, ratings),
       blurb: pick(blurbs, rand),
     });
     slot += span;
@@ -214,12 +236,18 @@ function fillDay(
  * Build the day's channel lineup. Channels that have nothing to show (no
  * movies in the library yet, say) are dropped rather than left empty.
  */
+/** Which half of the library the guide is allowed to broadcast. */
+export type GuideFilter = "all" | "watched" | "watchlist";
+
 export function buildGuide(
-  shows: LibraryShow[],
+  allShows: LibraryShow[],
   entries: LogEntry[],
   herProfileId: string,
   date = new Date(),
+  filter: GuideFilter = "all",
+  ratings?: RatingLookup,
 ): Channel[] {
+  const shows = filter === "all" ? allShows : allShows.filter((s) => s.status === filter);
   if (shows.length === 0) return [];
 
   const rand = rng(seedFromDate(date));
@@ -302,7 +330,7 @@ export function buildGuide(
       name: d.name,
       tint: d.tint,
       tagline: d.tagline,
-      programs: fillDay(d.pool, rand, counts, { marathon: d.marathon }),
+      programs: fillDay(d.pool, rand, counts, ratings, { marathon: d.marathon }),
     }));
 }
 

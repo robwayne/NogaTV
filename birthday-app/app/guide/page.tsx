@@ -1,44 +1,14 @@
-import Link from "next/link";
-import { ProfileBar } from "@/components/ProfileBar";
+import { Page } from "@/components/Page";
 import { TvGuide } from "@/components/TvGuide";
-import { SITE } from "@/data/content";
-
-export const metadata = {
-  title: `TV Guide — ${SITE.title}`,
-  description: "A day of listings built out of everything in our library.",
-};
 
 export default function GuidePage() {
   return (
-    <main>
-      <ProfileBar />
-
-      <div className="mx-auto w-full max-w-5xl px-4 pt-10 pb-16 sm:pt-16">
-        <Link
-          href="/"
-          className="text-[0.65rem] uppercase tracking-[0.25em] text-vhs-dim hover:text-vhs-amber"
-        >
-          ◀ back to the tapes
-        </Link>
-
-        <h1 className="chroma mt-6 text-4xl font-bold uppercase leading-none tracking-tight sm:text-6xl">
-          The Guide
-        </h1>
-        <p className="mt-3 text-sm uppercase tracking-[0.25em] text-vhs-cyan">
-          cable never went off the air, apparently
-        </p>
-        <p className="mt-5 max-w-2xl text-sm leading-relaxed text-vhs-dim">
-          Eight channels, all of them built out of our own library, because apparently that&apos;s
-          what I do with my free time now. Runs midnight to midnight and rebuilds itself every day.
-          It also quietly favours the episodes we&apos;ve watched least, on the theory that there
-          are in fact episodes of Sunny we haven&apos;t seen four times. Click a block to hold it,
-          or leave it alone and let it scroll at you.
-        </p>
-
-        <div className="mt-8">
-          <TvGuide />
-        </div>
-      </div>
-    </main>
+    <Page
+      index="08"
+      title="The Guide"
+      blurb="Eight channels, all of them built out of our own library, because apparently that's what I do with my free time now. Runs midnight to midnight and rebuilds itself every day. It favours the episodes we've watched least and rate highest, and you can point it at what we've already seen or only at what we haven't."
+    >
+      <TvGuide />
+    </Page>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { EpisodeRatings } from "@/components/EpisodeRatings";
 import { Stars } from "@/components/Stars";
 import { useStore, type LibraryShow } from "@/lib/store";
 
@@ -22,9 +23,19 @@ function Spine({ show }: { show: LibraryShow }) {
 }
 
 export function TapeCard({ show }: { show: LibraryShow }) {
-  const { activeProfile, profiles, entriesForShow, addEntry, removeEntry, setStatus, removeShow } =
-    useStore();
-  const [open, setOpen] = useState(false);
+  const {
+    activeProfile,
+    profiles,
+    entriesForShow,
+    addEntry,
+    removeEntry,
+    setStatus,
+    removeShow,
+    showRating,
+    setShowRating,
+  } = useStore();
+  const [panel, setPanel] = useState<"log" | "episodes" | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [season, setSeason] = useState("");
@@ -101,13 +112,30 @@ export function TapeCard({ show }: { show: LibraryShow }) {
             </p>
           ) : null}
 
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.65rem] uppercase tracking-[0.2em]">
+            <span className="text-vhs-dim">rate the show</span>
+            <Stars value={showRating(show.id)} onChange={(v) => setShowRating(show.id, v)} />
+            {showRating(show.id) ? (
+              <span className="text-vhs-line">
+                {show.status === "watchlist" ? "a guess, until we watch it" : ""}
+              </span>
+            ) : null}
+          </div>
+
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.65rem] uppercase tracking-[0.2em]">
             <button
               type="button"
-              onClick={() => setOpen((v) => !v)}
+              onClick={() => setPanel((p) => (p === "log" ? null : "log"))}
               className="text-vhs-cyan hover:text-vhs-amber"
             >
-              {open ? "hide log" : `log${entries.length ? ` (${entries.length})` : ""}`}
+              {panel === "log" ? "hide log" : `log${entries.length ? ` (${entries.length})` : ""}`}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPanel((p) => (p === "episodes" ? null : "episodes"))}
+              className="text-vhs-cyan hover:text-vhs-amber"
+            >
+              {panel === "episodes" ? "hide episodes" : "rate episodes"}
             </button>
             <button
               type="button"
@@ -116,20 +144,43 @@ export function TapeCard({ show }: { show: LibraryShow }) {
             >
               {show.status === "watched" ? "move to watchlist" : "mark watched"}
             </button>
-            {show.custom ? (
+            {confirmRemove ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => removeShow(show.id)}
+                  className="text-vhs-magenta hover:underline"
+                >
+                  really remove?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemove(false)}
+                  className="text-vhs-line hover:text-vhs-text"
+                >
+                  keep it
+                </button>
+              </>
+            ) : (
               <button
                 type="button"
-                onClick={() => removeShow(show.id)}
+                onClick={() => setConfirmRemove(true)}
                 className="text-vhs-dim hover:text-vhs-magenta"
               >
                 remove
               </button>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
 
-      {open ? (
+      {panel === "episodes" ? (
+        <div className="mt-4 border-t border-vhs-line pt-4">
+          <EpisodeRatings show={show} />
+        </div>
+      ) : null}
+
+      {panel === "log" ? (
         <div className="mt-4 border-t border-vhs-line pt-4">
           <form onSubmit={submit} className="grid gap-2 sm:grid-cols-[auto_5rem_5rem_1fr_auto] sm:items-center">
             <Stars value={rating} onChange={setRating} />

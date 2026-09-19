@@ -47,6 +47,12 @@ export type LogEntry = {
   createdAt: string;
 };
 
+/**
+ * Ratings live apart from the log. A log entry is "what we thought on the
+ * night"; a rating is the standing verdict on a show or on one episode, and
+ * either can exist without the other — including for things we haven't
+ * watched yet, where a rating is really a guess at how much we'll like it.
+ */
 export type Plan = {
   /** YYYY-MM-DD */
   date: string;
@@ -69,6 +75,10 @@ type Persisted = {
   profiles: Profile[];
   activeProfileId: string | null;
   entries: LogEntry[];
+  /** showId -> 1..5 */
+  showRatings: Record<string, number>;
+  /** "showId:season:episode" -> 1..5 */
+  episodeRatings: Record<string, number>;
 };
 
 const DEFAULT_PROFILES: Profile[] = [
@@ -87,6 +97,8 @@ const EMPTY: Persisted = {
   profiles: DEFAULT_PROFILES,
   activeProfileId: null,
   entries: [],
+  showRatings: {},
+  episodeRatings: {},
 };
 
 const KEY = "tapes.v1";
@@ -151,6 +163,12 @@ type Ctx = {
   addEntry: (entry: Omit<LogEntry, "id" | "profileId" | "createdAt">) => void;
   removeEntry: (id: string) => void;
   entriesForShow: (showId: string) => LogEntry[];
+  showRatings: Record<string, number>;
+  episodeRatings: Record<string, number>;
+  setShowRating: (showId: string, rating: number) => void;
+  setEpisodeRating: (showId: string, season: number, episode: number, rating: number) => void;
+  showRating: (showId: string) => number;
+  episodeRating: (showId: string, season: number, episode: number) => number;
   recs: LibraryRec[];
   addRec: (rec: Omit<Rec, "id">) => void;
   toggleRecDone: (id: string) => void;
@@ -244,6 +262,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }),
       removeEntry: (id) =>
         update((prev) => ({ ...prev, entries: prev.entries.filter((e) => e.id !== id) })),
+      showRatings: state.showRatings,
+      episodeRatings: state.episodeRatings,
+      setShowRating: (showId, rating) =>
+        update((prev) => {
+          const next = { ...prev.showRatings };
+          // Clicking the star you already gave clears the rating.
+          if (rating <= 0) delete next[showId];
+          else next[showId] = rating;
+          return { ...prev, showRatings: next };
+        }),
+      setEpisodeRating: (showId, season, episode, rating) =>
+        update((prev) => {
+          const key = `${showId}:${season}:${episode}`;
+          const next = { ...prev.episodeRatings };
+          if (rating <= 0) delete next[key];
+          else next[key] = rating;
+          return { ...prev, episodeRatings: next };
+        }),
+      showRating: (showId) => state.showRatings[showId] ?? 0,
+      episodeRating: (showId, season, episode) =>
+        state.episodeRatings[`${showId}:${season}:${episode}`] ?? 0,
       recs,
       addRec: (rec) =>
         update((prev) => {
@@ -320,6 +359,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             : [...prev.removedIds, id],
           plans: prev.plans.filter((p) => p.showId !== id),
           entries: prev.entries.filter((e) => e.showId !== id),
+          showRatings: Object.fromEntries(
+            Object.entries(prev.showRatings).filter(([key]) => key !== id),
+          ),
+          episodeRatings: Object.fromEntries(
+            Object.entries(prev.episodeRatings).filter(([key]) => !key.startsWith(`${id}:`)),
+          ),
         })),
       setPlan: (plan) =>
         update((prev) => ({

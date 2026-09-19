@@ -9,6 +9,7 @@ import {
   programAt,
   slotLabel,
   type Channel,
+  type GuideFilter,
   type Program,
 } from "@/lib/guide";
 import { SITE } from "@/data/content";
@@ -21,13 +22,14 @@ const COLUMNS = 3;
 
 /** The blue-and-gold listings grid, scrolling on its own like it's 1996. */
 export function TvGuide() {
-  const { ready, shows, entries, profiles, setPlan } = useStore();
+  const { ready, shows, entries, profiles, setPlan, showRating, episodeRating } = useStore();
   const herId = profiles[0]?.id ?? "her";
 
   const [slot, setSlot] = useState(() => currentSlot());
   // The lineup belongs to one calendar day; when the date rolls over at
   // midnight this changes and the whole guide rebuilds.
   const [day, setDay] = useState(() => new Date().toDateString());
+  const [filter, setFilter] = useState<GuideFilter>("all");
   const [offset, setOffset] = useState(0);
   const [paused, setPaused] = useState(false);
   const [selected, setSelected] = useState<{ channel: Channel; program: Program } | null>(null);
@@ -35,8 +37,13 @@ export function TvGuide() {
   const animating = useRef(true);
 
   const channels = useMemo(
-    () => (ready ? buildGuide(shows, entries, herId, new Date(day)) : []),
-    [ready, shows, entries, herId, day],
+    () =>
+      ready
+        ? buildGuide(shows, entries, herId, new Date(day), filter, { showRating, episodeRating })
+        : [],
+    // showRating/episodeRating change identity whenever a rating does, which is
+    // exactly when the lineup should be rebuilt.
+    [ready, shows, entries, herId, day, filter, showRating, episodeRating],
   );
 
   // Creep down the channel list the way the real thing did.
@@ -97,6 +104,15 @@ export function TvGuide() {
   if (channels.length === 0) {
     return (
       <p className="text-sm text-vhs-dim">
+        {filter !== "all" ? (
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className="mr-2 text-vhs-cyan underline"
+          >
+            Nothing on this half of the library — show everything?
+          </button>
+        ) : null}
         Nothing in the library yet. Add a show on the{" "}
         <Link href="/" className="text-vhs-cyan underline">
           main page
@@ -108,8 +124,37 @@ export function TvGuide() {
 
   const rows = [...channels, ...channels];
 
+  const FILTERS: { id: GuideFilter; label: string }[] = [
+    { id: "all", label: "everything" },
+    { id: "watched", label: "shows we've watched" },
+    { id: "watchlist", label: "shows we haven't" },
+  ];
+
   return (
-    <div className="overflow-hidden rounded-md border border-[#2b3aa0] bg-[#050830] shadow-[0_0_60px_-20px_#3b4fd8]">
+    <div>
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-dim">
+        <span>broadcasting</span>
+        {FILTERS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => {
+              setFilter(f.id);
+              setOffset(0);
+              setSelected(null);
+            }}
+            className={`rounded-sm border px-2.5 py-1 transition-colors ${
+              filter === f.id
+                ? "border-vhs-amber text-vhs-amber"
+                : "border-vhs-line text-vhs-dim hover:text-vhs-text"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="overflow-hidden rounded-md border border-[#2b3aa0] bg-[#050830] shadow-[0_0_60px_-20px_#3b4fd8]">
       {/* ── the promo window ─────────────────────────────────────────── */}
       <div className="relative border-b-2 border-[#2b3aa0] bg-gradient-to-b from-[#101a6e] to-[#070c3a] p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.6rem] uppercase tracking-[0.3em] text-[#8fa2ff]">
@@ -288,6 +333,7 @@ export function TvGuide() {
           ★ happy 28th birthday {SITE.herFullName} ★ friends since {SITE.friendsSince} ★ broadcasting
           from {SITE.where} ★ all channels, all night ★ nothing good on? there is, scroll down ★
         </div>
+      </div>
       </div>
     </div>
   );
