@@ -165,7 +165,7 @@ export function TvGuide() {
       </div>
 
       {/* ── time header ──────────────────────────────────────────────── */}
-      <div className="grid grid-cols-[6.5rem_repeat(3,1fr)] border-b border-[#2b3aa0] bg-[#0b1352] text-[0.6rem] uppercase tracking-[0.2em] text-[#8fa2ff] sm:text-[0.65rem]">
+      <div className="grid grid-cols-[5rem_1fr] border-b border-[#2b3aa0] bg-[#0b1352] text-[0.6rem] uppercase tracking-[0.2em] text-[#8fa2ff] sm:grid-cols-[6.5rem_repeat(3,1fr)] sm:text-[0.65rem]">
         <div className="flex items-center gap-2 px-3 py-2">
           <button
             type="button"
@@ -191,8 +191,11 @@ export function TvGuide() {
             ▶
           </button>
         </div>
-        {columns.map((c) => (
-          <div key={c} className="border-l border-[#2b3aa0] px-3 py-2">
+        {columns.map((c, i) => (
+          <div
+            key={c}
+            className={`border-l border-[#2b3aa0] px-3 py-2 ${i > 0 ? "hidden sm:block" : ""}`}
+          >
             {slotLabel(c)}
           </div>
         ))}
@@ -216,7 +219,7 @@ export function TvGuide() {
           {rows.map((channel, i) => (
             <div
               key={`${channel.number}-${i}`}
-              className="grid grid-cols-[6.5rem_repeat(3,1fr)] border-b border-[#1c2780]"
+              className="grid grid-cols-[5rem_1fr] border-b border-[#1c2780] sm:grid-cols-[6.5rem_repeat(3,1fr)]"
               style={{ height: ROW_HEIGHT }}
             >
               <div
@@ -231,7 +234,7 @@ export function TvGuide() {
                 </span>
               </div>
 
-              {columns.map((c) => {
+              {columns.map((c, i) => {
                 const program = programAt(channel, c);
                 const isStart = program?.start === c;
                 const isNow = c === slot;
@@ -245,7 +248,9 @@ export function TvGuide() {
                       setPaused(true);
                       setPlanned(null);
                     }}
-                    className="border-l border-[#1c2780] px-3 py-2 text-left transition-colors hover:bg-[#1a2596]"
+                    className={`border-l border-[#1c2780] px-3 py-2 text-left transition-colors hover:bg-[#1a2596] ${
+                      i > 0 ? "hidden sm:block" : ""
+                    }`}
                     style={{ background: isNow ? "#111c6b" : undefined }}
                   >
                     {program ? (
