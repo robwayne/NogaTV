@@ -93,7 +93,9 @@ export function TonightPicker() {
             </h3>
             <div className="mt-2 flex flex-wrap items-center gap-3">
               {pick.code ? (
-                <span className="text-sm tracking-[0.2em] text-vhs-amber">{pick.code}</span>
+                <span className="text-sm tracking-[0.2em] text-vhs-amber">
+                  {pick.partCodes?.length ? pick.partCodes.join(" + ") : pick.code}
+                </span>
               ) : null}
               <ServiceBadge
                 id={serviceFor(pick.show.id).id}

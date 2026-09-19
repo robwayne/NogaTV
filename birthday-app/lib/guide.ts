@@ -12,6 +12,7 @@
  */
 
 import { SITE } from "@/data/content";
+import { groupFor } from "@/lib/parts";
 import { qualityOf, rankCandidates, rankShows, type RatingLookup } from "@/lib/rank";
 import type { LibraryShow, LogEntry } from "@/lib/store";
 
@@ -173,17 +174,49 @@ function fillDay(show: LibraryShow, rand: () => number, ratings: RatingLookup) {
 
   // Ranked best-first, then drawn from with a bias toward the front: every
   // half hour is a different suggestion, but the good ones come up more.
-  const ranked = rankCandidates([show], [], ratings, { deterministic: true })
+  const ranked = rankCandidates([show], [], ratings, {
+    deterministic: true,
+    allowLaterParts: true,
+  })
     .map((c) => c.code)
     .filter((code): code is string => Boolean(code));
 
   let remaining = [...ranked];
-  const drawEpisode = () => {
-    if (ranked.length === 0) return null;
+
+  /**
+   * Draws the next thing to schedule. A two-parter comes back whole, so the
+   * caller can lay its parts down in consecutive slots rather than letting
+   * part two turn up three hours before part one.
+   */
+  const draw = (slotsLeft: number): string[] => {
+    if (ranked.length === 0) return [];
     if (remaining.length === 0) remaining = [...ranked];
     // rand² lands near zero more often than not, which is the top of the list.
     const index = Math.floor(rand() ** 2 * remaining.length);
-    return remaining.splice(index, 1)[0];
+    const [code] = remaining.splice(index, 1);
+
+    const parsed = code.match(/^S(\d+)E(\d+)$/);
+    const group = parsed ? groupFor(show, Number(parsed[1]), Number(parsed[2])) : null;
+    if (!group) return [code];
+
+    const codes = group.episodes.map((e) => formatEpisodeCode(group.season, e));
+
+    // Don't start a two-parter that midnight would cut in half — put it back
+    // and take something that fits instead.
+    if (codes.length > slotsLeft) {
+      remaining.push(code);
+      const single = remaining.findIndex((c) => {
+        const m = c.match(/^S(\d+)E(\d+)$/);
+        return !m || !groupFor(show, Number(m[1]), Number(m[2]));
+      });
+      if (single === -1) return [];
+      return remaining.splice(single, 1);
+    }
+
+    // Whichever part was drawn, the whole group goes out together and none of
+    // its parts can be drawn again this cycle.
+    remaining = remaining.filter((c) => !codes.includes(c));
+    return codes;
   };
 
   const blurbs = isMovie ? BLURBS_MOVIE : show.status === "watchlist" ? BLURBS_NEW : BLURBS_SHOW;
@@ -194,21 +227,29 @@ function fillDay(show: LibraryShow, rand: () => number, ratings: RatingLookup) {
   while (slot < SLOTS_PER_DAY) {
     // Every half-hour slot gets its own recommendation; a film needs longer.
     const span = isMovie ? 4 : 1;
+    const codes = isMovie ? [null] : draw(SLOTS_PER_DAY - slot);
 
-    // Two identical lines in a row reads like a bug, so nudge past a repeat.
-    let blurb = pick(blurbs, rand);
-    if (blurb === lastBlurb) blurb = pick(blurbs, rand);
-    lastBlurb = blurb;
+    codes.forEach((code, i) => {
+      if (slot >= SLOTS_PER_DAY) return;
 
-    programs.push({
-      start: slot,
-      span: Math.min(span, SLOTS_PER_DAY - slot),
-      show,
-      episode: isMovie ? null : drawEpisode(),
-      blurb,
+      // Two identical lines in a row reads like a bug, so nudge past a repeat.
+      let blurb = pick(blurbs, rand);
+      if (blurb === lastBlurb) blurb = pick(blurbs, rand);
+      lastBlurb = blurb;
+
+      programs.push({
+        start: slot,
+        span: Math.min(span, SLOTS_PER_DAY - slot),
+        show,
+        episode: code ?? null,
+        // A part that isn't the first says so, so the grid reads in order.
+        blurb: codes.length > 1 ? `Part ${i + 1} of ${codes.length}. ${blurb}` : blurb,
+      });
+
+      slot += span;
     });
 
-    slot += span;
+    if (codes.length === 0) slot += span;
   }
 
   return programs;

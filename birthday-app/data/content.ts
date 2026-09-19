@@ -20,6 +20,12 @@ export type Show = {
   progress?: { seasonsWatched: number; seasonsTotal: number };
   /** Episodes per season, in order. Used by the shuffler to pick a real episode. */
   seasons?: number[];
+  /**
+   * Episodes that only make sense together — two-parters, mostly. Each group
+   * is scheduled back to back, in order, and never split up. Add a group as
+   * `{ season: 4, episodes: [5, 6] }`.
+   */
+  parts?: { season: number; episodes: number[] }[];
   /** One line about what this show is to us. */
   note: string;
   /** The episode that broke us. */
@@ -67,6 +73,13 @@ export const WATCHED: Show[] = [
     color: "#4ce0b3",
     progress: { seasonsWatched: 16, seasonsTotal: 17 },
     seasons: [7, 10, 15, 15, 12, 10, 13, 10, 10, 10, 8, 10, 8, 10, 10, 8, 8],
+    // Two-parters, kept together. This is what I could remember — add any
+    // I've missed and the guide will schedule them back to back too.
+    parts: [
+      { season: 3, episodes: [12, 13] }, // The Gang Gets Whacked
+      { season: 4, episodes: [5, 6] }, //  Mac and Charlie Die
+      { season: 11, episodes: [9, 10] }, // The Gang Goes to Hell
+    ],
     note: "TODO: what Sunny is to the two of you.",
     favoriteEpisode: "TODO: your favorite episode",
     quote: "TODO: a line you both quote constantly",

@@ -11,6 +11,7 @@
  * not their parent shows.
  */
 
+import { groupFor, isLaterPart } from "@/lib/parts";
 import type { LibraryShow, LogEntry } from "@/lib/store";
 
 /** Where an unrated thing sits on the 1–5 scale. */
@@ -51,6 +52,8 @@ export type Candidate = {
   ratedDirectly: boolean;
   score: number;
   reasons: string[];
+  /** Every episode code in this candidate's group, when it's a two-parter. */
+  partCodes?: string[];
 };
 
 export function episodeCode(season: number, episode: number) {
@@ -103,6 +106,8 @@ export type RankOptions = {
   deterministic?: boolean;
   /** Only consider episodes someone has actually put a rating on. */
   ratedOnly?: boolean;
+  /** Keep later parts of a two-parter in the running (the guide wants them). */
+  allowLaterParts?: boolean;
   random?: () => number;
 };
 
@@ -137,6 +142,10 @@ export function rankCandidates(
       : [{}];
 
     for (const slot of slots) {
+      // Never recommend part two as a thing to watch: the group's opening
+      // part stands in for the whole run of it.
+      if (!options.allowLaterParts && isLaterPart(show, slot.season, slot.episode)) continue;
+
       const { quality, ratedDirectly } = qualityOf(show, ratings, slot.season, slot.episode);
       if (options.ratedOnly && !ratedDirectly) continue;
 
@@ -164,11 +173,15 @@ export function rankCandidates(
       score -= Math.min(showSeen * SHOW_FATIGUE_PENALTY, 6);
       if (!options.deterministic) score += rand() * JITTER;
 
+      const group = groupFor(show, slot.season, slot.episode);
+      if (group) reasons.push(`${group.episodes.length} parts — watch them together`);
+
       out.push({
         show,
         season: slot.season,
         episode: slot.episode,
         code: slot.season && slot.episode ? episodeCode(slot.season, slot.episode) : null,
+        partCodes: group?.episodes.map((e) => episodeCode(group.season, e)),
         quality,
         ratedDirectly,
         score,
