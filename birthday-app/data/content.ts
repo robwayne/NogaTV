@@ -93,6 +93,8 @@ export const WATCHED: Show[] = [
     initials: "30R",
     color: "#ff8fb1",
     progress: { seasonsWatched: 7, seasonsTotal: 7 },
+    // Approximate episode counts — edit to taste.
+    seasons: [21, 15, 22, 22, 23, 22, 13],
     note: "TODO: replace or delete this one.",
     tags: ["sitcom"],
   },
@@ -106,6 +108,8 @@ export const WATCHLIST: Show[] = [
     years: "2009–2023",
     initials: "PD",
     color: "#c58cff",
+    // Approximate episode counts — edit to taste.
+    seasons: [10, 10, 6],
     note: "TODO: why this one is next.",
     tags: ["sitcom"],
   },
@@ -115,6 +119,8 @@ export const WATCHLIST: Show[] = [
     years: "2017–2018",
     initials: "DET",
     color: "#ffb45e",
+    // Approximate episode counts — edit to taste.
+    seasons: [10, 10],
     note: "TODO: why this one is next.",
     tags: ["sitcom"],
   },
@@ -124,6 +130,8 @@ export const WATCHLIST: Show[] = [
     years: "2014–2017",
     initials: "REV",
     color: "#68e08a",
+    // Approximate episode counts — edit to taste.
+    seasons: [9, 10, 3],
     note: "TODO: why this one is next.",
     tags: ["sitcom"],
   },
@@ -163,6 +171,8 @@ export const WATCHLIST: Show[] = [
     years: "2015–",
     initials: "TM",
     color: "#ff6b6b",
+    // Approximate episode counts — edit to taste.
+    seasons: [6, 6, 6, 8, 8, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
     note: "TODO: why this one is next.",
     tags: ["panel show"],
   },

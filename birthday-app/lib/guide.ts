@@ -171,21 +171,29 @@ function fillDay(show: LibraryShow, rand: () => number, ratings: RatingLookup) {
   const programs: Program[] = [];
   const isMovie = show.kind === "movie";
 
-  const queue = isMovie
-    ? []
-    : rankCandidates([show], [], ratings, { deterministic: true })
-        .map((c) => c.code)
-        .filter((code): code is string => Boolean(code));
+  // Ranked best-first, then drawn from with a bias toward the front: every
+  // half hour is a different suggestion, but the good ones come up more.
+  const ranked = rankCandidates([show], [], ratings, { deterministic: true })
+    .map((c) => c.code)
+    .filter((code): code is string => Boolean(code));
+
+  let remaining = [...ranked];
+  const drawEpisode = () => {
+    if (ranked.length === 0) return null;
+    if (remaining.length === 0) remaining = [...ranked];
+    // rand² lands near zero more often than not, which is the top of the list.
+    const index = Math.floor(rand() ** 2 * remaining.length);
+    return remaining.splice(index, 1)[0];
+  };
 
   const blurbs = isMovie ? BLURBS_MOVIE : show.status === "watchlist" ? BLURBS_NEW : BLURBS_SHOW;
 
   let slot = 0;
-  let next = 0;
   let lastBlurb = "";
 
   while (slot < SLOTS_PER_DAY) {
-    // A film fills an evening; an episode takes half an hour or an hour.
-    const span = isMovie ? 4 : rand() > 0.65 ? 2 : 1;
+    // Every half-hour slot gets its own recommendation; a film needs longer.
+    const span = isMovie ? 4 : 1;
 
     // Two identical lines in a row reads like a bug, so nudge past a repeat.
     let blurb = pick(blurbs, rand);
@@ -196,11 +204,10 @@ function fillDay(show: LibraryShow, rand: () => number, ratings: RatingLookup) {
       start: slot,
       span: Math.min(span, SLOTS_PER_DAY - slot),
       show,
-      episode: queue.length ? queue[next % queue.length] : null,
+      episode: isMovie ? null : drawEpisode(),
       blurb,
     });
 
-    next += 1;
     slot += span;
   }
 
