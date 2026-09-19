@@ -19,7 +19,7 @@ export default function Page() {
         id="tonight"
         index="01"
         title="What are we watching"
-        blurb="Let the tape pick, or ask for a real recommendation based on what we've already scheduled."
+        blurb="Neither of us can make a decision, so here's a machine that makes it for us. Shuffle for chaos, or ask it properly and it'll actually think about it."
       >
         <TonightPicker />
       </Section>
@@ -28,7 +28,7 @@ export default function Page() {
         id="schedule"
         index="02"
         title="The week"
-        blurb="Claim a night. Pick a show. Nobody has to negotiate at 9pm again."
+        blurb="Claim a night, pick a thing. The nine o'clock standoff is hereby cancelled."
       >
         <Schedule />
       </Section>
@@ -37,7 +37,7 @@ export default function Page() {
         id="watched"
         index="03"
         title="Shows we've watched"
-        blurb="The catalogue. Open any tape to rate an episode or leave a note."
+        blurb="The evidence. Open any tape to rate an episode or leave a note nobody asked for."
       >
         <Library status="watched" />
       </Section>
@@ -46,16 +46,26 @@ export default function Page() {
         id="watchlist"
         index="04"
         title="Shows we haven't watched yet"
-        blurb="Everything still ahead of us. Add anything, any time."
+        blurb="The pile. Grows faster than we get through it. Add whatever you want, it's not like it'll help."
       >
         <Library status="watchlist" />
       </Section>
 
-      <Section id="log" index="05" title="The log" blurb="Everything we've said about everything.">
+      <Section
+        id="log"
+        index="05"
+        title="The log"
+        blurb="Every opinion either of us has put in writing. Held against us forever."
+      >
         <ActivityFeed />
       </Section>
 
-      <Section id="top" index="06" title="Top picks" blurb="The hall of fame.">
+      <Section
+        id="top"
+        index="06"
+        title="Top picks"
+        blurb="The hall of fame. Non-negotiable, already litigated."
+      >
         <TopPicks />
       </Section>
 
@@ -63,13 +73,13 @@ export default function Page() {
         id="her"
         index="07"
         title={`What inspires me about ${SITE.herName}`}
-        blurb="The part that isn't about television."
+        blurb="The sincere bit. Skip it if you want, I'll know."
       >
         <Inspirations />
       </Section>
 
       <footer className="mx-auto w-full max-w-5xl px-4 pb-16 text-[0.6rem] uppercase tracking-[0.3em] text-vhs-line">
-        ■ stop — happy birthday, {SITE.herName}
+        ■ stop — happy birthday, {SITE.herName}. eat something.
       </footer>
     </main>
   );

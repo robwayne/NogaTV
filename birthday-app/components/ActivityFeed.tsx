@@ -11,7 +11,7 @@ export function ActivityFeed() {
   if (entries.length === 0) {
     return (
       <p className="text-sm text-vhs-dim">
-        Nothing logged yet. Open any tape below and leave the first note.
+        Nothing logged yet. Hundreds of hours of television and not one written opinion between us.
       </p>
     );
   }

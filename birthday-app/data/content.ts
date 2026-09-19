@@ -35,10 +35,10 @@ export const SITE = {
   where: "Tel Aviv",
   // The big line at the top.
   title: "The Tapes",
-  subtitle: "everything we've watched, everything we still have to",
+  subtitle: "everything we've watched, and the enormous pile we haven't",
   // Shown under the title.
   dedication:
-    "Happy 28th, Noga. Friends since 2020, one of the first people I met in Tel Aviv, and a frankly unreasonable number of hours on the couch since. This is all of it, catalogued — plus everything we haven't watched yet.",
+    "Happy 28th. Five years of friendship and I made you a website about television, which I think says something about both of us. Every hour we've spent on that couch is in here. So is every hour we still owe each other.",
 };
 
 /** Shows we've watched together. */
@@ -51,7 +51,7 @@ export const WATCHED: Show[] = [
     color: "#f7d046",
     progress: { seasonsWatched: 12, seasonsTotal: 12 },
     seasons: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-    note: "The one that started it. Now neither of us can do a normal social interaction without narrating it.",
+    note: "Where it all went wrong. Neither of us has had a normal conversation since — everything is a bit now, everything gets narrated.",
     favoriteEpisode: "TODO: your favorite episode",
     quote: "Pretty, pretty, pretty good.",
     tags: ["sitcom", "the origin story"],
@@ -160,6 +160,80 @@ export const TOP_PICKS: { showId: string; blurb: string }[] = [
   {
     showId: "sunny",
     blurb: "TODO: why this one wins.",
+  },
+];
+
+/**
+ * The recommendation shelves: everything one of us pushed on the other.
+ * `by` is a profile id — "me" or "her".
+ */
+export type Rec = {
+  id: string;
+  title: string;
+  kind: "show" | "film" | "book";
+  year?: string;
+  by: "me" | "her";
+  /** The pitch. Why they should watch/read it. */
+  note?: string;
+  /** Link it to a library show (by id) and the shuffler can suggest an episode. */
+  showId?: string;
+  /** Ticked off once the other person has actually got to it. */
+  done?: boolean;
+};
+
+export const RECOMMENDATIONS: Rec[] = [
+  // ── things I pushed on her ──────────────────────────────────────────────
+  {
+    id: "rec-curb",
+    title: "Curb Your Enthusiasm",
+    kind: "show",
+    year: "2000–2024",
+    by: "me",
+    showId: "curb",
+    note: "The original crime. No apologies.",
+    done: true,
+  },
+  {
+    id: "rec-sunny",
+    title: "It's Always Sunny in Philadelphia",
+    kind: "show",
+    year: "2005–",
+    by: "me",
+    showId: "sunny",
+    note: "TODO: your pitch.",
+    done: true,
+  },
+  {
+    id: "rec-lebowski",
+    title: "The Big Lebowski",
+    kind: "film",
+    year: "1998",
+    by: "me",
+    showId: "the-big-lebowski",
+    note: "TODO: your pitch.",
+  },
+
+  // ── things she pushed on me ─────────────────────────────────────────────
+  {
+    id: "rec-philosophy",
+    title: "TODO: the philosophy book she gave you",
+    kind: "book",
+    by: "her",
+    note: "TODO: what it did to you.",
+  },
+  {
+    id: "rec-her-film",
+    title: "TODO: a film Noga made you watch",
+    kind: "film",
+    by: "her",
+    note: "TODO: her pitch, as she made it.",
+  },
+  {
+    id: "rec-her-show",
+    title: "TODO: a show Noga put you onto",
+    kind: "show",
+    by: "her",
+    note: "TODO.",
   },
 ];
 

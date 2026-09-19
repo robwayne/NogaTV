@@ -37,9 +37,9 @@ export function shuffle(shows: LibraryShow[], mood: Mood, avoidId?: string): Pic
   const reason =
     show.status === "watched"
       ? ep.season
-        ? "A rerun we've earned. The dice picked the episode."
-        : "A rerun we've earned."
-      : "Still unopened. Tonight could be the night.";
+        ? "One we've seen. The machine picked the episode, so don't blame me."
+        : "One we've seen. Comfort over growth, as usual."
+      : "Never touched it. Tonight's as good a night as any to keep not touching it.";
 
   return { show, ...ep, reason };
 }
@@ -68,22 +68,22 @@ export function recommend(shows: LibraryShow[], plans: Plan[]): Pick | null {
 
     if (show.status === "watchlist") {
       score += 40;
-      why.push("it's still on the list");
+      why.push("it's been rotting on the list");
     } else {
       score += 10;
-      why.push("we already love it");
+      why.push("we already know we like it");
     }
 
     if (!scheduledCount.has(show.id)) {
       score += 25;
-      why.push("we've never put it on the calendar");
+      why.push("we've never once scheduled it");
     } else {
       score -= Math.min(scheduledCount.get(show.id)! * 6, 24);
     }
 
     if (mostRecent?.showId === show.id) {
       score -= 30;
-      why.push("but we just watched it, so maybe not");
+      why.push("though we literally just watched it, so use your judgement");
     }
 
     // A nudge of randomness so it doesn't give the same answer every day.

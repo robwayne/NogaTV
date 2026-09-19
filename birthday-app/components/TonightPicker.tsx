@@ -76,7 +76,7 @@ export function TonightPicker() {
           </div>
         ) : (
           <p className="text-sm text-vhs-dim">
-            Press a button and let the tape decide.
+            Press something. Anything. We&apos;ve been scrolling for twenty minutes.
           </p>
         )}
       </div>

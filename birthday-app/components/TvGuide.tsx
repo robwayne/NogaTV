@@ -25,6 +25,9 @@ export function TvGuide() {
   const herId = profiles[0]?.id ?? "her";
 
   const [slot, setSlot] = useState(() => currentSlot());
+  // The lineup belongs to one calendar day; when the date rolls over at
+  // midnight this changes and the whole guide rebuilds.
+  const [day, setDay] = useState(() => new Date().toDateString());
   const [offset, setOffset] = useState(0);
   const [paused, setPaused] = useState(false);
   const [selected, setSelected] = useState<{ channel: Channel; program: Program } | null>(null);
@@ -32,8 +35,8 @@ export function TvGuide() {
   const animating = useRef(true);
 
   const channels = useMemo(
-    () => (ready ? buildGuide(shows, entries, herId) : []),
-    [ready, shows, entries, herId],
+    () => (ready ? buildGuide(shows, entries, herId, new Date(day)) : []),
+    [ready, shows, entries, herId, day],
   );
 
   // Creep down the channel list the way the real thing did.
@@ -58,7 +61,10 @@ export function TvGuide() {
 
   // Keep the clock honest.
   useEffect(() => {
-    const id = window.setInterval(() => setSlot(currentSlot()), 60_000);
+    const id = window.setInterval(() => {
+      setSlot(currentSlot());
+      setDay(new Date().toDateString());
+    }, 60_000);
     return () => window.clearInterval(id);
   }, []);
 
@@ -108,7 +114,14 @@ export function TvGuide() {
       <div className="relative border-b-2 border-[#2b3aa0] bg-gradient-to-b from-[#101a6e] to-[#070c3a] p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.6rem] uppercase tracking-[0.3em] text-[#8fa2ff]">
           <span className="text-[#ffd84d]">TV GUIDE</span>
-          <span>{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</span>
+          <span>
+            {new Date(day).toLocaleDateString(undefined, {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+          <span className="text-[#6d7cc9]">midnight to midnight</span>
           <span className="ml-auto">{slotLabel(slot)}</span>
         </div>
 

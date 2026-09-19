@@ -151,7 +151,7 @@ export function TapeCard({ show }: { show: LibraryShow }) {
             />
             <input
               className="field"
-              placeholder={activeProfile ? "what did you think?" : "pick a profile above first"}
+              placeholder={activeProfile ? "go on then, what did you think" : "say who you are first"}
               value={text}
               disabled={!activeProfile}
               onChange={(e) => setText(e.target.value)}
@@ -168,7 +168,7 @@ export function TapeCard({ show }: { show: LibraryShow }) {
 
           <ul className="mt-4 space-y-3">
             {entries.length === 0 ? (
-              <li className="text-xs text-vhs-dim">Nothing logged yet.</li>
+              <li className="text-xs text-vhs-dim">No opinions on record. Suspicious.</li>
             ) : null}
             {entries.map((e) => (
               <li key={e.id} className="text-sm">

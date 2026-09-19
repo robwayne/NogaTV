@@ -17,7 +17,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { SITE, WATCHED, WATCHLIST, type Show } from "@/data/content";
+import { RECOMMENDATIONS, SITE, WATCHED, WATCHLIST, type Rec, type Show } from "@/data/content";
 
 export type Status = "watched" | "watchlist";
 
@@ -56,8 +56,13 @@ export type Plan = {
   note?: string;
 };
 
+export type LibraryRec = Rec & { custom: boolean };
+
 type Persisted = {
   customShows: (Show & { status: Status })[];
+  customRecs: Rec[];
+  recDone: Record<string, boolean>;
+  removedRecIds: string[];
   statusOverrides: Record<string, Status>;
   removedIds: string[];
   plans: Plan[];
@@ -73,6 +78,9 @@ const DEFAULT_PROFILES: Profile[] = [
 
 const EMPTY: Persisted = {
   customShows: [],
+  customRecs: [],
+  recDone: {},
+  removedRecIds: [],
   statusOverrides: {},
   removedIds: [],
   plans: [],
@@ -143,6 +151,10 @@ type Ctx = {
   addEntry: (entry: Omit<LogEntry, "id" | "profileId" | "createdAt">) => void;
   removeEntry: (id: string) => void;
   entriesForShow: (showId: string) => LogEntry[];
+  recs: LibraryRec[];
+  addRec: (rec: Omit<Rec, "id">) => void;
+  toggleRecDone: (id: string) => void;
+  removeRec: (id: string) => void;
   addShow: (input: {
     title: string;
     years?: string;
@@ -189,6 +201,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       .map((s) => ({ ...s, status: state.statusOverrides[s.id] ?? s.status }));
   }, [state]);
 
+  const recs = useMemo<LibraryRec[]>(() => {
+    const seed: LibraryRec[] = RECOMMENDATIONS.map((r) => ({ ...r, custom: false }));
+    const custom: LibraryRec[] = state.customRecs.map((r) => ({ ...r, custom: true }));
+    return [...seed, ...custom]
+      .filter((r) => !state.removedRecIds.includes(r.id))
+      .map((r) => ({ ...r, done: state.recDone[r.id] ?? r.done ?? false }));
+  }, [state]);
+
   const value = useMemo<Ctx>(() => {
     const byId = (id: string) => shows.find((s) => s.id === id);
 
@@ -224,6 +244,36 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }),
       removeEntry: (id) =>
         update((prev) => ({ ...prev, entries: prev.entries.filter((e) => e.id !== id) })),
+      recs,
+      addRec: (rec) =>
+        update((prev) => {
+          const title = rec.title.trim();
+          if (!title) return prev;
+          const taken = new Set([
+            ...RECOMMENDATIONS.map((r) => r.id),
+            ...prev.customRecs.map((r) => r.id),
+          ]);
+          let id = `rec-${slugify(title)}`;
+          let n = 2;
+          while (taken.has(id)) id = `rec-${slugify(title)}-${n++}`;
+          return { ...prev, customRecs: [...prev.customRecs, { ...rec, title, id }] };
+        }),
+      toggleRecDone: (id) =>
+        update((prev) => ({
+          ...prev,
+          recDone: {
+            ...prev.recDone,
+            [id]: !(prev.recDone[id] ?? recs.find((r) => r.id === id)?.done ?? false),
+          },
+        })),
+      removeRec: (id) =>
+        update((prev) => ({
+          ...prev,
+          customRecs: prev.customRecs.filter((r) => r.id !== id),
+          removedRecIds: prev.removedRecIds.includes(id)
+            ? prev.removedRecIds
+            : [...prev.removedRecIds, id],
+        })),
       entriesForShow: (showId) =>
         state.entries
           .filter((e) => e.showId === showId)
@@ -281,7 +331,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       exportJson: () => JSON.stringify(state, null, 2),
       resetAll: () => update(() => EMPTY),
     };
-  }, [ready, shows, state, update]);
+  }, [ready, shows, recs, state, update]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

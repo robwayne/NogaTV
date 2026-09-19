@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { ProfileBar } from "@/components/ProfileBar";
-import { TvGuide } from "@/components/TvGuide";
+import { RecShuffler } from "@/components/RecShuffler";
+import { Recommendations } from "@/components/Recommendations";
 import { SITE } from "@/data/content";
 
 export const metadata = {
-  title: `TV Guide — ${SITE.title}`,
-  description: "A day of listings built out of everything in our library.",
+  title: `Recommendations — ${SITE.title}`,
+  description: "Everything we've made each other watch and read.",
 };
 
-export default function GuidePage() {
+export default function RecommendationsPage() {
   return (
     <main>
       <ProfileBar />
@@ -22,21 +23,24 @@ export default function GuidePage() {
         </Link>
 
         <h1 className="chroma mt-6 text-4xl font-bold uppercase leading-none tracking-tight sm:text-6xl">
-          The Guide
+          Homework
         </h1>
         <p className="mt-3 text-sm uppercase tracking-[0.25em] text-vhs-cyan">
-          cable never went off the air, apparently
+          things we&apos;ve forced on each other
         </p>
         <p className="mt-5 max-w-2xl text-sm leading-relaxed text-vhs-dim">
-          Eight channels, all of them built out of our own library, because apparently that&apos;s
-          what I do with my free time now. Runs midnight to midnight and rebuilds itself every day.
-          It also quietly favours the episodes we&apos;ve watched least, on the theory that there
-          are in fact episodes of Sunny we haven&apos;t seen four times. Click a block to hold it,
-          or leave it alone and let it scroll at you.
+          Shows, films and books. Two shelves so we can keep score. Hit a button below and it picks
+          something off one of them — or off both, if you can&apos;t be trusted to choose. Anything
+          already ticked off gets skipped, which is the closest thing to a reward system either of us
+          responds to.
         </p>
 
         <div className="mt-8">
-          <TvGuide />
+          <RecShuffler />
+        </div>
+
+        <div className="mt-12">
+          <Recommendations />
         </div>
       </div>
     </main>
