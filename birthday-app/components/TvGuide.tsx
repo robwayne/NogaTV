@@ -12,6 +12,7 @@ import {
   type GuideFilter,
   type Program,
 } from "@/lib/guide";
+import { ServiceBadge } from "@/components/ServiceBadge";
 import { SITE } from "@/data/content";
 import { useStore } from "@/lib/store";
 
@@ -22,7 +23,8 @@ const COLUMNS = 3;
 
 /** The blue-and-gold listings grid, scrolling on its own like it's 1996. */
 export function TvGuide() {
-  const { ready, shows, entries, profiles, setPlan, showRating, episodeRating } = useStore();
+  const { ready, shows, entries, profiles, setPlan, showRating, episodeRating, serviceFor } =
+    useStore();
   const herId = profiles[0]?.id ?? "her";
 
   const [slot, setSlot] = useState(() => currentSlot());
@@ -172,8 +174,13 @@ export function TvGuide() {
 
         {highlight ? (
           <div className="mt-4">
-            <div className="text-[0.65rem] uppercase tracking-[0.3em]" style={{ color: highlight.channel.tint }}>
-              CH {highlight.channel.number} · {highlight.channel.name}
+            <div className="flex flex-wrap items-center gap-2 text-[0.65rem] uppercase tracking-[0.3em]">
+              <ServiceBadge
+                id={serviceFor(highlight.program.show.id).id}
+                fallback={!serviceFor(highlight.program.show.id).chosen}
+                size="md"
+              />
+              <span style={{ color: highlight.channel.tint }}>{highlight.channel.name}</span>
             </div>
             <h3 className="mt-2 text-2xl font-bold leading-tight text-[#ffd84d] sm:text-4xl">
               {highlight.program.show.title}
@@ -268,12 +275,23 @@ export function TvGuide() {
               style={{ height: ROW_HEIGHT }}
             >
               <div
-                className="flex flex-col justify-center border-r border-[#2b3aa0] px-3"
+                className="flex flex-col justify-center gap-1 border-r border-[#2b3aa0] px-3"
                 style={{ background: `linear-gradient(90deg, ${channel.tint}22, transparent)` }}
               >
-                <span className="text-lg font-bold" style={{ color: channel.tint }}>
-                  {channel.number}
-                </span>
+                {(() => {
+                  // The "channel number" is wherever the thing currently on
+                  // this channel can actually be watched.
+                  const onNow = programAt(channel, columns[0]);
+                  if (!onNow) {
+                    return (
+                      <span className="text-lg font-bold" style={{ color: channel.tint }}>
+                        {channel.number}
+                      </span>
+                    );
+                  }
+                  const where = serviceFor(onNow.show.id);
+                  return <ServiceBadge id={where.id} fallback={!where.chosen} />;
+                })()}
                 <span className="text-[0.55rem] uppercase leading-tight tracking-[0.15em] text-[#8fa2ff]">
                   {channel.name}
                 </span>

@@ -7,6 +7,9 @@ export type Show = {
   id: string;
   title: string;
   years: string;
+  /** Where it can be watched — an id from lib/services.ts. Optional; without
+   *  one, everything assumes Stremio. */
+  service?: string;
   /** Shows and movies both live in the library; the TV guide treats them differently. */
   kind?: "show" | "movie";
   /** Two or three letters shown on the "tape label" when there's no artwork. */

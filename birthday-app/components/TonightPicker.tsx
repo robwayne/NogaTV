@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ServiceBadge } from "@/components/ServiceBadge";
 import { bestCandidate, rankCandidates, type Candidate } from "@/lib/rank";
 import { useStore } from "@/lib/store";
 
@@ -14,7 +15,7 @@ const MOODS: { id: Mood; label: string }[] = [
 ];
 
 export function TonightPicker() {
-  const { ready, shows, entries, showRating, episodeRating, setPlan } = useStore();
+  const { ready, shows, entries, showRating, episodeRating, setPlan, serviceFor } = useStore();
   const [mood, setMood] = useState<Mood>("any");
   const [pick, setPick] = useState<Candidate | null>(null);
   const [rolling, setRolling] = useState(false);
@@ -90,9 +91,15 @@ export function TonightPicker() {
             <h3 className="chroma-soft mt-1 text-3xl font-bold leading-tight sm:text-4xl">
               {pick.show.title}
             </h3>
-            {pick.code ? (
-              <p className="mt-1 text-sm tracking-[0.2em] text-vhs-amber">{pick.code}</p>
-            ) : null}
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              {pick.code ? (
+                <span className="text-sm tracking-[0.2em] text-vhs-amber">{pick.code}</span>
+              ) : null}
+              <ServiceBadge
+                id={serviceFor(pick.show.id).id}
+                fallback={!serviceFor(pick.show.id).chosen}
+              />
+            </div>
             <p className="mt-3 max-w-xl text-sm text-vhs-dim">
               {pick.reasons.length
                 ? pick.reasons.join(" · ")

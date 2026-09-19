@@ -1,11 +1,12 @@
 "use client";
 
+import { ServiceBadge } from "@/components/ServiceBadge";
 import { Stars } from "@/components/Stars";
 import { useStore } from "@/lib/store";
 
 /** The Letterboxd-ish feed: everything either of us has logged, newest first. */
 export function ActivityFeed() {
-  const { ready, entries, byId, profiles } = useStore();
+  const { ready, entries, byId, profiles, serviceFor } = useStore();
   if (!ready) return null;
 
   if (entries.length === 0) {
@@ -33,6 +34,13 @@ export function ActivityFeed() {
                 </span>
               ) : null}
               {e.rating ? <Stars value={e.rating} /> : null}
+              {show ? (
+                <ServiceBadge
+                  id={serviceFor(show.id).id}
+                  fallback={!serviceFor(show.id).chosen}
+                  size="xs"
+                />
+              ) : null}
             </div>
             {e.text ? <p className="mt-2 text-sm text-vhs-dim">{e.text}</p> : null}
           </li>

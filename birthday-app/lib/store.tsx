@@ -18,6 +18,7 @@ import {
   useState,
 } from "react";
 import { RECOMMENDATIONS, SITE, WATCHED, WATCHLIST, type Rec, type Show } from "@/data/content";
+import { DEFAULT_SERVICE } from "@/lib/services";
 
 export type Status = "watched" | "watchlist";
 
@@ -77,6 +78,8 @@ type Persisted = {
   profiles: Profile[];
   activeProfileId: string | null;
   entries: LogEntry[];
+  /** showId -> service id from lib/services.ts */
+  services: Record<string, string>;
   /** showId -> 1..5 */
   showRatings: Record<string, number>;
   /** "showId:season:episode" -> 1..5 */
@@ -100,6 +103,7 @@ const EMPTY: Persisted = {
   profiles: DEFAULT_PROFILES,
   activeProfileId: null,
   entries: [],
+  services: {},
   showRatings: {},
   episodeRatings: {},
 };
@@ -184,7 +188,11 @@ type Ctx = {
     status: Status;
     seasons?: number[];
     kind?: "show" | "movie";
+    service?: string;
   }) => void;
+  /** The chosen service, or Stremio when nobody has said. */
+  serviceFor: (showId: string) => { id: string; chosen: boolean };
+  setService: (showId: string, service: string) => void;
   setStatus: (id: string, status: Status) => void;
   removeShow: (id: string) => void;
   setPlan: (plan: Plan) => void;
@@ -343,7 +351,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         state.entries
           .filter((e) => e.showId === showId)
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
-      addShow: ({ title, years, note, status, seasons, kind }) => {
+      serviceFor: (showId) => {
+        const chosen = state.services[showId] ?? shows.find((s) => s.id === showId)?.service;
+        return { id: chosen ?? DEFAULT_SERVICE, chosen: Boolean(chosen) };
+      },
+      setService: (showId, service) =>
+        update((prev) => {
+          const next = { ...prev.services };
+          if (!service) delete next[showId];
+          else next[showId] = service;
+          return { ...prev, services: next };
+        }),
+      addShow: ({ title, years, note, status, seasons, kind, service }) => {
         const trimmed = title.trim();
         if (!trimmed) return;
         update((prev) => {
@@ -363,6 +382,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             note: note?.trim() || "",
             status,
             ...(kind ? { kind } : {}),
+            ...(service ? { service } : {}),
             ...(seasons && seasons.length ? { seasons } : {}),
             ...(status === "watched" && seasons?.length
               ? { progress: { seasonsWatched: seasons.length, seasonsTotal: seasons.length } }
@@ -385,6 +405,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             : [...prev.removedIds, id],
           plans: prev.plans.filter((p) => p.showId !== id),
           entries: prev.entries.filter((e) => e.showId !== id),
+          services: Object.fromEntries(
+            Object.entries(prev.services).filter(([key]) => key !== id),
+          ),
           showRatings: Object.fromEntries(
             Object.entries(prev.showRatings).filter(([key]) => key !== id),
           ),

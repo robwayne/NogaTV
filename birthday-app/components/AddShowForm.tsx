@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SERVICES } from "@/lib/services";
 import { useStore, type Status } from "@/lib/store";
 
 /** Add a show on the fly, straight from the page. */
@@ -10,20 +11,22 @@ export function AddShowForm({ defaultStatus }: { defaultStatus: Status }) {
   const [years, setYears] = useState("");
   const [note, setNote] = useState("");
   const [kind, setKind] = useState<"show" | "movie">("show");
+  const [service, setService] = useState("");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    addShow({ title, years, note, status: defaultStatus, kind });
+    addShow({ title, years, note, status: defaultStatus, kind, service: service || undefined });
     setTitle("");
     setYears("");
     setNote("");
+    setService("");
   }
 
   return (
     <form
       onSubmit={submit}
-      className="tape grid gap-2 rounded-md border-dashed p-4 sm:grid-cols-[1.2fr_0.5fr_1.4fr_auto_auto]"
+      className="tape grid gap-2 rounded-md border-dashed p-4 sm:grid-cols-[1.1fr_0.5fr_1.2fr_0.8fr_auto_auto]"
     >
       <input
         className="field"
@@ -46,6 +49,19 @@ export function AddShowForm({ defaultStatus }: { defaultStatus: Status }) {
         onChange={(e) => setNote(e.target.value)}
         aria-label="Note"
       />
+      <select
+        className="field"
+        value={service}
+        onChange={(e) => setService(e.target.value)}
+        aria-label="Where to watch (optional)"
+      >
+        <option value="">where? (optional)</option>
+        {SERVICES.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
+        ))}
+      </select>
       <button
         type="button"
         onClick={() => setKind((k) => (k === "show" ? "movie" : "show"))}

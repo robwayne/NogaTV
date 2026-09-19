@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { EpisodeRatings } from "@/components/EpisodeRatings";
+import { ServiceBadge } from "@/components/ServiceBadge";
 import { Stars } from "@/components/Stars";
+import { SERVICES } from "@/lib/services";
 import { useStore, type LibraryShow } from "@/lib/store";
 
 function Spine({ show }: { show: LibraryShow }) {
@@ -33,15 +35,19 @@ export function TapeCard({ show }: { show: LibraryShow }) {
     removeShow,
     showRating,
     setShowRating,
+    serviceFor,
+    setService,
   } = useStore();
   const [panel, setPanel] = useState<"log" | "episodes" | null>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [picking, setPicking] = useState(false);
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [season, setSeason] = useState("");
   const [episode, setEpisode] = useState("");
 
   const entries = entriesForShow(show.id);
+  const service = serviceFor(show.id);
   const nameOf = (id: string) => profiles.find((p) => p.id === id)?.name ?? "someone";
   const colorOf = (id: string) => profiles.find((p) => p.id === id)?.color ?? "#9b91c4";
 
@@ -62,7 +68,7 @@ export function TapeCard({ show }: { show: LibraryShow }) {
 
   return (
     <article
-      className="tape rounded-md p-4 transition-all"
+      className="tape relative rounded-md p-4 pb-9 transition-all"
       style={{ ["--tape-color" as string]: show.color }}
     >
       <div className="flex gap-4">
@@ -172,6 +178,39 @@ export function TapeCard({ show }: { show: LibraryShow }) {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Where to watch: the badge sits in the corner, and clicking it opens
+          the picker. */}
+      <div className="absolute bottom-2.5 right-3 flex items-center gap-2">
+        {picking ? (
+          <select
+            className="field w-auto py-1 text-[0.65rem]"
+            value={service.chosen ? service.id : ""}
+            onChange={(e) => {
+              setService(show.id, e.target.value);
+              setPicking(false);
+            }}
+            onBlur={() => setPicking(false)}
+            aria-label={`Where to watch ${show.title}`}
+            autoFocus
+          >
+            <option value="">not set (assume Stremio)</option>
+            {SERVICES.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setPicking(true)}
+            aria-label={`Where to watch ${show.title}`}
+          >
+            <ServiceBadge id={service.id} fallback={!service.chosen} />
+          </button>
+        )}
       </div>
 
       {panel === "episodes" ? (

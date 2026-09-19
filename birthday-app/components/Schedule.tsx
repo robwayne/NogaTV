@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ServiceBadge } from "@/components/ServiceBadge";
 import { randomEpisode } from "@/lib/recommend";
 import { useStore } from "@/lib/store";
 
@@ -19,7 +20,7 @@ function iso(d: Date) {
 
 /** Pick what we're watching on which night. */
 export function Schedule() {
-  const { ready, shows, plans, setPlan, clearPlan, byId } = useStore();
+  const { ready, shows, plans, setPlan, clearPlan, byId, serviceFor } = useStore();
   const [week, setWeek] = useState(0);
 
   const days = useMemo(() => {
@@ -77,7 +78,14 @@ export function Schedule() {
                 <span className={isToday ? "text-vhs-amber" : "text-vhs-dim"}>
                   {DAYS[d.getDay()]}
                 </span>
-                <span className="text-vhs-line">
+                <span className="flex items-center gap-2 text-vhs-line">
+                  {show ? (
+                    <ServiceBadge
+                      id={serviceFor(show.id).id}
+                      fallback={!serviceFor(show.id).chosen}
+                      size="xs"
+                    />
+                  ) : null}
                   {d.getMonth() + 1}/{d.getDate()}
                 </span>
               </div>
