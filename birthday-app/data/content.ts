@@ -274,6 +274,11 @@ export const LOCK = {
   /** How many days it stays open, counting the birthday itself. */
   openDays: 3,
   password: "19980924",
+  /**
+   * TEMPORARY: leaves the page open and its menu link visible whatever the
+   * date. Set back to false to re-seal it.
+   */
+  preview: true,
 };
 
 /** Things I'm inspired by about her. */

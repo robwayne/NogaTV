@@ -5,6 +5,8 @@ import { LOCK } from "@/data/content";
  * and runs for LOCK.openDays days, every year, in the viewer's own timezone.
  */
 export function windowIsOpen(now = new Date()): boolean {
+  if (LOCK.preview) return true;
+
   const start = new Date(now.getFullYear(), LOCK.month - 1, LOCK.day);
   start.setHours(0, 0, 0, 0);
 
