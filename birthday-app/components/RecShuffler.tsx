@@ -13,18 +13,13 @@ type Suggestion = {
   line: string;
 };
 
-const LINES: Record<"show" | "film" | "book", string[]> = {
+const LINES: Record<"show" | "film", string[]> = {
   show: [
     "Put it on. Argue about it after.",
     "One episode. That's all anyone ever commits to.",
     "Start it tonight and see what happens.",
   ],
   film: ["Feature length. Clear the evening.", "One sitting, no phones.", "Watch it properly."],
-  book: [
-    "Not a television night. Read it.",
-    "Twenty pages is still twenty pages.",
-    "Put the remote down.",
-  ],
 };
 
 /** Roll a recommendation from one shelf or from both at once. */

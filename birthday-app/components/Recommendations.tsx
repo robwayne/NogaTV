@@ -8,7 +8,6 @@ import type { Rec } from "@/data/content";
 const KIND_LABEL: Record<Rec["kind"], string> = {
   show: "show",
   film: "film",
-  book: "book",
 };
 
 function RecRow({ rec }: { rec: LibraryRec }) {
@@ -58,7 +57,7 @@ function RecRow({ rec }: { rec: LibraryRec }) {
               onClick={() =>
                 setDraft({
                   ...draft,
-                  kind: draft.kind === "show" ? "film" : draft.kind === "film" ? "book" : "show",
+                  kind: draft.kind === "show" ? "film" : "show",
                 })
               }
               className="rounded-sm border border-vhs-line px-3 py-2 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-dim hover:text-vhs-amber"
@@ -196,9 +195,7 @@ function AddRecForm({ by }: { by: "me" | "her" }) {
       />
       <button
         type="button"
-        onClick={() =>
-          setKind((k) => (k === "show" ? "film" : k === "film" ? "book" : "show"))
-        }
+        onClick={() => setKind((k) => (k === "show" ? "film" : "show"))}
         className="rounded-sm border border-vhs-line px-3 py-2 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-dim hover:text-vhs-amber"
         aria-label={`Currently adding a ${kind}. Click to change.`}
       >

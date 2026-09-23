@@ -14,6 +14,7 @@ const PAGES = [
   { href: "/watchlist", label: "To Watch" },
   { href: "/log", label: "The Log" },
   { href: "/homework", label: "Homework" },
+  { href: "/books", label: "Books" },
   { href: "/top-picks", label: "Top Picks" },
   // Only appears during the birthday window; the page itself stays reachable
   // with the password the rest of the year.

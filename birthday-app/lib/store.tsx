@@ -17,7 +17,16 @@ import {
   useMemo,
   useState,
 } from "react";
-import { RECOMMENDATIONS, SITE, WATCHED, WATCHLIST, type Rec, type Show } from "@/data/content";
+import {
+  BOOKS,
+  RECOMMENDATIONS,
+  SITE,
+  WATCHED,
+  WATCHLIST,
+  type Book,
+  type Rec,
+  type Show,
+} from "@/data/content";
 import { DEFAULT_SERVICE, isKnownService } from "@/lib/services";
 
 export type Status = "watched" | "watchlist";
@@ -65,6 +74,8 @@ export type Plan = {
 
 export type LibraryRec = Rec & { custom: boolean };
 
+export type LibraryBook = Book & { custom: boolean };
+
 type Persisted = {
   customShows: (Show & { status: Status })[];
   customRecs: Rec[];
@@ -72,6 +83,9 @@ type Persisted = {
   removedRecIds: string[];
   /** Edits layered over the seeded recommendations in data/content.ts. */
   recEdits: Record<string, Partial<Rec>>;
+  customBooks: Book[];
+  bookEdits: Record<string, Partial<Book>>;
+  removedBookIds: string[];
   statusOverrides: Record<string, Status>;
   removedIds: string[];
   plans: Plan[];
@@ -96,6 +110,9 @@ const EMPTY: Persisted = {
   recDone: {},
   removedRecIds: [],
   recEdits: {},
+  customBooks: [],
+  bookEdits: {},
+  removedBookIds: [],
   statusOverrides: {},
   removedIds: [],
   plans: [],
@@ -160,14 +177,14 @@ export function initialsFor(title: string) {
  * A recommendation for something watchable should also exist in the library,
  * otherwise the shuffler and the guide can't actually suggest it. Matches an
  * existing show by title first; failing that, creates one on the watchlist.
- * Books are left alone — nothing is going to schedule a book for Tuesday.
+ * Books live on their own shelf and never come through here.
  */
 function linkRecToLibrary(
   prev: Persisted,
   rec: Rec,
   seedShows: Show[],
 ): { rec: Rec; customShows: (Show & { status: Status })[] } {
-  if (rec.kind === "book" || rec.showId) return { rec, customShows: prev.customShows };
+  if (rec.showId) return { rec, customShows: prev.customShows };
 
   const title = rec.title.trim().toLowerCase();
   const existing = [...seedShows, ...prev.customShows].find(
@@ -214,6 +231,10 @@ type Ctx = {
   setEpisodeRating: (showId: string, season: number, episode: number, rating: number) => void;
   showRating: (showId: string) => number;
   episodeRating: (showId: string, season: number, episode: number) => number;
+  books: LibraryBook[];
+  addBook: (book: Omit<Book, "id" | "color">) => void;
+  updateBook: (id: string, patch: Partial<Omit<Book, "id">>) => void;
+  removeBook: (id: string) => void;
   recs: LibraryRec[];
   addRec: (rec: Omit<Rec, "id">) => void;
   updateRec: (id: string, patch: Partial<Omit<Rec, "id">>) => void;
@@ -274,11 +295,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const custom: LibraryRec[] = state.customRecs.map((r) => ({ ...r, custom: true }));
     return [...seed, ...custom]
       .filter((r) => !state.removedRecIds.includes(r.id))
+      .filter((r) => (r.kind as string) !== "book")
       .map((r) => ({
         ...r,
         ...state.recEdits[r.id],
         done: state.recDone[r.id] ?? r.done ?? false,
       }));
+  }, [state]);
+
+  const books = useMemo<LibraryBook[]>(() => {
+    const seed: LibraryBook[] = BOOKS.map((b) => ({ ...b, custom: false }));
+    const custom: LibraryBook[] = state.customBooks.map((b) => ({ ...b, custom: true }));
+    return [...seed, ...custom]
+      .filter((b) => !state.removedBookIds.includes(b.id))
+      .map((b) => ({ ...b, ...state.bookEdits[b.id] }));
   }, [state]);
 
   const value = useMemo<Ctx>(() => {
@@ -329,6 +359,50 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       showRating: (showId) => state.showRatings[showId] ?? 0,
       episodeRating: (showId, season, episode) =>
         state.episodeRatings[`${showId}:${season}:${episode}`] ?? 0,
+      books,
+      addBook: (book) =>
+        update((prev) => {
+          const title = book.title.trim();
+          if (!title) return prev;
+          const taken = new Set([
+            ...BOOKS.map((b) => b.id),
+            ...prev.customBooks.map((b) => b.id),
+          ]);
+          let id = `book-${slugify(title)}`;
+          let n = 2;
+          while (taken.has(id)) id = `book-${slugify(title)}-${n++}`;
+          return {
+            ...prev,
+            customBooks: [
+              ...prev.customBooks,
+              { ...book, title, id, color: PALETTE[taken.size % PALETTE.length] },
+            ],
+          };
+        }),
+      updateBook: (id, patch) =>
+        update((prev) => {
+          if (prev.customBooks.some((b) => b.id === id)) {
+            return {
+              ...prev,
+              customBooks: prev.customBooks.map((b) => (b.id === id ? { ...b, ...patch } : b)),
+            };
+          }
+          return {
+            ...prev,
+            bookEdits: { ...prev.bookEdits, [id]: { ...prev.bookEdits[id], ...patch } },
+          };
+        }),
+      removeBook: (id) =>
+        update((prev) => ({
+          ...prev,
+          customBooks: prev.customBooks.filter((b) => b.id !== id),
+          removedBookIds: prev.removedBookIds.includes(id)
+            ? prev.removedBookIds
+            : [...prev.removedBookIds, id],
+          bookEdits: Object.fromEntries(
+            Object.entries(prev.bookEdits).filter(([key]) => key !== id),
+          ),
+        })),
       recs,
       addRec: (rec) =>
         update((prev) => {
@@ -477,7 +551,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       exportJson: () => JSON.stringify(state, null, 2),
       resetAll: () => update(() => EMPTY),
     };
-  }, [ready, shows, recs, state, update]);
+  }, [ready, shows, recs, books, state, update]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

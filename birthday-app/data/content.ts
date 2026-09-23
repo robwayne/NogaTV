@@ -146,7 +146,7 @@ export const TOP_PICKS: { showId: string; blurb: string }[] = [
 export type Rec = {
   id: string;
   title: string;
-  kind: "show" | "film" | "book";
+  kind: "show" | "film";
   year?: string;
   by: "me" | "her";
   /** The pitch. Why they should watch/read it. */
@@ -182,13 +182,6 @@ export const RECOMMENDATIONS: Rec[] = [
 
   // ── things she pushed on me ─────────────────────────────────────────────
   {
-    id: "rec-philosophy",
-    title: "TODO: the philosophy book she gave you",
-    kind: "book",
-    by: "her",
-    note: "TODO: what it did to you.",
-  },
-  {
     id: "rec-her-film",
     title: "TODO: a film Noga made you watch",
     kind: "film",
@@ -203,6 +196,57 @@ export const RECOMMENDATIONS: Rec[] = [
     by: "her",
     showId: "new-girl",
     note: "TODO: her pitch, as she made it.",
+  },
+];
+
+/**
+ * The bookshelf. Separate from the television entirely, which is roughly how
+ * it works in real life too.
+ */
+export type Book = {
+  id: string;
+  title: string;
+  author: string;
+  /** Who put it in the other one's hands. */
+  by: "me" | "her" | "both";
+  status: "reading" | "want" | "finished";
+  /** 0–100, only meaningful while reading. */
+  progress?: number;
+  /** 1–5, once there's a verdict. */
+  rating?: number;
+  /** The spine colour on the shelf. */
+  color: string;
+  note?: string;
+};
+
+export const BOOKS: Book[] = [
+  {
+    id: "book-philosophy",
+    title: "TODO: the philosophy book she gave you",
+    author: "TODO: author",
+    by: "her",
+    status: "reading",
+    progress: 40,
+    color: "#c58cff",
+    note: "TODO: what it's doing to you.",
+  },
+  {
+    id: "book-her-two",
+    title: "TODO: another of Noga's",
+    author: "TODO: author",
+    by: "her",
+    status: "want",
+    color: "#4ce0e8",
+    note: "TODO.",
+  },
+  {
+    id: "book-mine",
+    title: "TODO: one you pushed on her",
+    author: "TODO: author",
+    by: "me",
+    status: "want",
+    color: "#ffcc4d",
+    note: "TODO.",
   },
 ];
 
