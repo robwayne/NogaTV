@@ -3,7 +3,7 @@ name: Deploy the birthday site to GitHub Pages
 on:
   push:
     branches:
-      - claude/birthday-gift-web-app-fedsgs
+      - nogatv
     paths:
       - "birthday-app/**"
       - ".github/workflows/pages.yml"
