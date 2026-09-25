@@ -243,7 +243,7 @@ export function Bookshelf() {
               <p className="mt-1 text-xs text-vhs-dim">{shelf.blurb}</p>
 
               {shelved.length === 0 ? (
-                <p className="mt-4 text-xs text-vhs-line">Nothing on this shelf.</p>
+                <p className="mt-4 text-xs text-vhs-line">Nothing on this shelf yet.</p>
               ) : (
                 <div className="mt-4 flex flex-wrap gap-5">
                   {shelved.map((book) => (

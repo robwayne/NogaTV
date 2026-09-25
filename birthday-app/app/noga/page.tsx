@@ -8,7 +8,6 @@ export default function NogaPage() {
     <Page
       index="09"
       title={`What inspires me about ${SITE.herName}`}
-      blurb="The sincere bit. Skip it if you want, I'll know."
     >
       <LockGate>
         <Inspirations />

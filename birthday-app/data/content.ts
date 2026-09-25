@@ -27,7 +27,7 @@ export type Show = {
    */
   parts?: { season: number; episodes: number[] }[];
   /** One line about what this show is to us. */
-  note: string;
+  note?: string;
   /** The episode that broke us. */
   favoriteEpisode?: string;
   /** A line one of us actually says out loud now. */
@@ -60,8 +60,7 @@ export const WATCHED: Show[] = [
     color: "#f7d046",
     progress: { seasonsWatched: 12, seasonsTotal: 12 },
     seasons: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
-    note: "Where it all went wrong. Neither of us has had a normal conversation since — everything is a bit now, everything gets narrated.",
-    favoriteEpisode: "TODO: your favorite episode",
+    note: "Where it all went wrong. Neither of us has had a normal conversation since. Everything is a bit now, everything gets narrated.",
     quote: "Pretty, pretty, pretty good.",
     tags: ["sitcom", "the origin story"],
   },
@@ -80,9 +79,6 @@ export const WATCHED: Show[] = [
       { season: 4, episodes: [5, 6] }, //  Mac and Charlie Die
       { season: 11, episodes: [9, 10] }, // The Gang Goes to Hell
     ],
-    note: "TODO: what Sunny is to the two of you.",
-    favoriteEpisode: "TODO: your favorite episode",
-    quote: "TODO: a line you both quote constantly",
     tags: ["sitcom", "quoted daily"],
   },
   {
@@ -94,9 +90,6 @@ export const WATCHED: Show[] = [
     progress: { seasonsWatched: 6, seasonsTotal: 8 },
     // Approximate episode counts — edit if you want the shuffler to be exact.
     seasons: [14, 18, 15, 13, 12, 16, 15, 12],
-    note: "TODO: what Reno is to the two of you.",
-    favoriteEpisode: "TODO: your favorite episode",
-    quote: "TODO: a line you both quote constantly",
     tags: ["sitcom", "quoted daily"],
   },
   {
@@ -108,7 +101,6 @@ export const WATCHED: Show[] = [
     progress: { seasonsWatched: 7, seasonsTotal: 7 },
     // Approximate episode counts — edit to taste.
     seasons: [21, 15, 22, 22, 23, 22, 13],
-    note: "TODO: replace or delete this one.",
     tags: ["sitcom"],
   },
 ];
@@ -122,20 +114,17 @@ export const WATCHLIST: Show[] = [
     initials: "NG",
     color: "#ff9ec4",
     seasons: [24, 25, 23, 22, 22, 22, 8],
-    note: "TODO: Noga's pitch, in her words.",
     tags: ["sitcom", "noga's fault"],
   },
 ];
 
 /** The hall of fame — ids can come from either list above. */
-export const TOP_PICKS: { showId: string; blurb: string }[] = [
+export const TOP_PICKS: { showId: string; blurb?: string }[] = [
   {
     showId: "curb",
-    blurb: "TODO: why this one wins.",
   },
   {
     showId: "sunny",
-    blurb: "TODO: why this one wins.",
   },
 ];
 
@@ -149,7 +138,7 @@ export type Rec = {
   kind: "show" | "film";
   year?: string;
   by: "me" | "her";
-  /** The pitch. Why they should watch/read it. */
+  /** The pitch. Why they should watch it. */
   note?: string;
   /** Link it to a library show (by id) and the shuffler can suggest an episode. */
   showId?: string;
@@ -176,18 +165,10 @@ export const RECOMMENDATIONS: Rec[] = [
     year: "2005–",
     by: "me",
     showId: "sunny",
-    note: "TODO: your pitch.",
     done: true,
   },
 
   // ── things she pushed on me ─────────────────────────────────────────────
-  {
-    id: "rec-her-film",
-    title: "TODO: a film Noga made you watch",
-    kind: "film",
-    by: "her",
-    note: "TODO: her pitch, as she made it.",
-  },
   {
     id: "rec-new-girl",
     title: "New Girl",
@@ -195,7 +176,6 @@ export const RECOMMENDATIONS: Rec[] = [
     year: "2011–2018",
     by: "her",
     showId: "new-girl",
-    note: "TODO: her pitch, as she made it.",
   },
 ];
 
@@ -219,36 +199,7 @@ export type Book = {
   note?: string;
 };
 
-export const BOOKS: Book[] = [
-  {
-    id: "book-philosophy",
-    title: "TODO: the philosophy book she gave you",
-    author: "TODO: author",
-    by: "her",
-    status: "reading",
-    progress: 40,
-    color: "#c58cff",
-    note: "TODO: what it's doing to you.",
-  },
-  {
-    id: "book-her-two",
-    title: "TODO: another of Noga's",
-    author: "TODO: author",
-    by: "her",
-    status: "want",
-    color: "#4ce0e8",
-    note: "TODO.",
-  },
-  {
-    id: "book-mine",
-    title: "TODO: one you pushed on her",
-    author: "TODO: author",
-    by: "me",
-    status: "want",
-    color: "#ffcc4d",
-    note: "TODO.",
-  },
-];
+export const BOOKS: Book[] = [];
 
 /**
  * The lock on the inspiration page.
@@ -280,7 +231,7 @@ export const INSPIRATIONS: { heading: string; body: string }[] = [
   {
     heading: "She makes things, and they're good",
     body:
-      "The abstract work especially. I don't always know what I'm looking at and I've stopped needing to — it does something to me before I've worked out why, which I think is the whole point. She does the visuals and the art for her grandma too, and that tells you as much about her as the work itself does.",
+      "The abstract work especially. I don't always know what I'm looking at and I've stopped needing to, because it does something to me before I've worked out why, which I think is the whole point. She does the visuals and the art for her grandma too, and that tells you as much about her as the work itself does.",
   },
   {
     heading: "She got me into art",
@@ -295,7 +246,7 @@ export const INSPIRATIONS: { heading: string; body: string }[] = [
   {
     heading: "She's genuinely giving",
     body:
-      "Caring in the practical, unglamorous way — the kind that costs something. She doesn't think of herself as any of this, which is exactly why it lands. Being around it makes me want to be a better person, and I don't think she's ever noticed she's doing it.",
+      "Caring in the practical, unglamorous way, the kind that costs something. She doesn't think of herself as any of this, which is exactly why it lands. Being around it makes me want to be a better person, and I don't think she's ever noticed she's doing it.",
   },
   {
     heading: "She's the person I try to impress",
@@ -305,7 +256,7 @@ export const INSPIRATIONS: { heading: string; body: string }[] = [
 ];
 
 /** The closing note. Keep it short; it lands harder. */
-export const LETTER = `Noga — happy 28th.
+export const LETTER = `Noga, happy 28th.
 
 Friends since 2020. One of the first people I met in Tel Aviv, and somehow still one of the most influential people in my life: the art, the books, the standard you set for how to treat people without ever making a thing of it.
 

@@ -89,7 +89,7 @@ export function RecShuffler() {
             </h3>
             {suggestion.episode ? (
               <p className="mt-1 text-sm tracking-[0.2em] text-vhs-amber">
-                start with {suggestion.episode} — the one we&apos;ve watched least
+                start with {suggestion.episode}, the one we&apos;ve watched least
               </p>
             ) : null}
             {suggestion.rec.note ? (

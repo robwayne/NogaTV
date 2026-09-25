@@ -109,7 +109,7 @@ export function TvGuide() {
             onClick={() => setFilter("all")}
             className="mr-2 text-vhs-cyan underline"
           >
-            Nothing on this half of the library — show everything?
+            Nothing on this half of the library. Show everything?
           </button>
         ) : null}
         Nothing in the library yet. Add a show on the{" "}

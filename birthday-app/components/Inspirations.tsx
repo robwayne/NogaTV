@@ -22,7 +22,7 @@ export function Inspirations() {
           </p>
         ))}
         <p className="mt-6 text-[0.65rem] uppercase tracking-[0.3em] text-vhs-dim">
-          — {SITE.fromName}
+          {SITE.fromName}
         </p>
       </div>
     </div>

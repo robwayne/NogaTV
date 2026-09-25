@@ -29,7 +29,9 @@ export function TopPicks() {
               no. {String(i + 1).padStart(2, "0")}
             </div>
             <h3 className="chroma-soft mt-2 text-2xl font-bold leading-tight">{show.title}</h3>
-            <p className="mt-3 text-sm leading-relaxed text-vhs-dim">{pick.blurb}</p>
+            {pick.blurb ? (
+              <p className="mt-3 text-sm leading-relaxed text-vhs-dim">{pick.blurb}</p>
+            ) : null}
             <p className="mt-4 text-[0.65rem] uppercase tracking-[0.2em] text-vhs-line">
               {avg ? `${avg.toFixed(1)} avg from ${profiles.length} of us` : "unrated so far"}
             </p>

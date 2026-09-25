@@ -1,13 +1,11 @@
-/** The shell every page shares: a title, a line of attitude, then the goods. */
+/** The shell every page shares: a number, a title, then the goods. */
 export function Page({
   index,
   title,
-  blurb,
   children,
 }: {
   index: string;
   title: string;
-  blurb?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -17,7 +15,6 @@ export function Page({
         <h1 className="chroma mt-2 text-3xl font-bold uppercase leading-none tracking-tight sm:text-5xl">
           {title}
         </h1>
-        {blurb ? <p className="mt-4 max-w-2xl text-sm leading-relaxed text-vhs-dim">{blurb}</p> : null}
       </header>
       {children}
     </div>

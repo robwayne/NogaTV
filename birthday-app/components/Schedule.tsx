@@ -116,7 +116,7 @@ export function Schedule() {
                 }}
                 aria-label={`What we're watching on ${DAYS[d.getDay()]}`}
               >
-                <option value="">— pick —</option>
+                <option value="">pick one</option>
                 {shows.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.title}

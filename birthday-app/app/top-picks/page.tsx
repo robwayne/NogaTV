@@ -3,7 +3,7 @@ import { TopPicks } from "@/components/TopPicks";
 
 export default function TopPicksPage() {
   return (
-    <Page index="07" title="Top picks" blurb="The hall of fame. Non-negotiable, already litigated.">
+    <Page index="07" title="Top picks">
       <TopPicks />
     </Page>
   );

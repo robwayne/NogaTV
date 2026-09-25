@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { ServiceBadge } from "@/components/ServiceBadge";
 import { bestCandidate, rankCandidates, type Candidate } from "@/lib/rank";
 import { useStore } from "@/lib/store";
@@ -105,7 +104,7 @@ export function TonightPicker() {
             <p className="mt-3 max-w-xl text-sm text-vhs-dim">
               {pick.reasons.length
                 ? pick.reasons.join(" · ")
-                : "No ratings to go on yet — this one's a straight guess."}
+                : "No ratings to go on yet, so this one's a straight guess."}
             </p>
           </div>
         ) : (
@@ -143,19 +142,6 @@ export function TonightPicker() {
         ) : null}
       </div>
 
-      <p className="mt-5 text-xs leading-relaxed text-vhs-line">
-        The recommendation compares episodes against each other, not shows. An episode you&apos;ve
-        rated yourself always beats a guess made from its show&apos;s rating, so a middling show
-        with a few great episodes will still come up. Rate things on{" "}
-        <Link href="/watched" className="underline hover:text-vhs-amber">
-          Watched
-        </Link>{" "}
-        and{" "}
-        <Link href="/watchlist" className="underline hover:text-vhs-amber">
-          To Watch
-        </Link>
-        .
-      </p>
     </div>
   );
 }
