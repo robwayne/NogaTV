@@ -47,7 +47,7 @@ export const SITE = {
   subtitle: "everything we've watched, and the enormous pile we haven't",
   // Shown under the title.
   dedication:
-    "Happy 28th. Five years of friendship and I made you a website about television, which I think says something about both of us. Every hour we've spent on that couch is in here. So is every hour we still owe each other.",
+    "Happy 28th. Five years of friendship (apparently she said it's 6 years 🙄) and I made you a website about television, which I think says something about both of us. Every hour we've spent on that couch is in here. So is every hour we still owe each other.",
 };
 
 /** Shows we've watched together. */
